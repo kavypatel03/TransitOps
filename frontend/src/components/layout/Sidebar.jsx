@@ -19,7 +19,7 @@ import { twMerge } from 'tailwind-merge';
 const cn = (...inputs) => twMerge(clsx(inputs));
 
 export const NAV_ITEMS = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['driver', 'financial_analyst'] },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['financial_analyst'] },
   { name: 'Fleet Registry', path: '/fleet', icon: Truck, roles: ['fleet_manager', 'financial_analyst'] },
   { name: 'Driver Management', path: '/drivers', icon: Users, roles: ['fleet_manager', 'safety_officer'] },
   { name: 'Trip Dispatcher', path: '/trips', icon: Map, roles: ['fleet_manager', 'driver'] },
