@@ -39,8 +39,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     navigate('/');
   };
 
+  const normalizedRole = user?.role?.toLowerCase().replace(/\s+/g, '_');
   const allowedNavItems = NAV_ITEMS.filter(item => 
-    !item.roles || item.roles.includes(user?.role)
+    !item.roles || item.roles.includes(normalizedRole)
   );
 
   return (

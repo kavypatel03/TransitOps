@@ -22,15 +22,16 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && allowedRoles.length > 0) {
-    const normalizedRole = (currentUser.role || '').toLowerCase();
+    const normalizedRole = (currentUser.role || '').toLowerCase().replace(/\s+/g, '_');
 
     const allowed = allowedRoles.some(
-      (r) => r.toLowerCase() === normalizedRole
+      (r) => r.toLowerCase().replace(/\s+/g, '_') === normalizedRole
     );
 
     if (!allowed) {
       if (normalizedRole === 'fleet_manager') return <Navigate to="/fleet" replace />;
       if (normalizedRole === 'driver') return <Navigate to="/trips" replace />;
+      if (normalizedRole === 'safety_officer') return <Navigate to="/drivers" replace />;
       return <Navigate to="/dashboard" replace />;
     }
   }
