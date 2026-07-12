@@ -173,9 +173,9 @@ const DriverManagement = () => {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-8">
         
         {/* Header & Tools */}
-        <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex gap-4 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-80">
+        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <div className="flex gap-4 w-full md:w-auto">
+            <div className="relative flex-1 md:w-80">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <Search className="h-4 w-4" />
               </div>
@@ -186,14 +186,16 @@ const DriverManagement = () => {
             </button>
           </div>
           
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <span className="text-sm text-slate-500 mr-2">Showing {drivers.length} active driver(s)</span>
-            <button onClick={exportToExcel} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
-              <Download className="w-4 h-4" /> Export Excel
-            </button>
-            <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
-              <Plus className="w-4 h-4" /> Register New Driver
-            </button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto justify-end">
+            <span className="text-sm text-slate-500">Showing {drivers.length} active driver(s)</span>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button onClick={exportToExcel} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+                <Download className="w-4 h-4" /> Export Excel
+              </button>
+              <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
+                <Plus className="w-4 h-4" /> Register Driver
+              </button>
+            </div>
           </div>
         </div>
 

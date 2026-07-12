@@ -86,16 +86,16 @@ const ExpensesFuel = () => {
     <DashboardLayout title="Fuel & Expenses">
       
       {/* Header Actions */}
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 mb-1">Financial Overview</h2>
           <p className="text-sm text-slate-500">Track fleet costs, fuel logs and operational efficiency.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
             <Download className="w-4 h-4" /> Export Report
           </button>
-          <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
+          <button onClick={() => setIsModalOpen(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
             <Plus className="w-4 h-4" /> Add Expense
           </button>
         </div>
@@ -199,12 +199,12 @@ const ExpensesFuel = () => {
 
       {/* Table Section */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
-        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
-          <div className="flex gap-2">
-            <button className="px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-lg text-sm font-bold text-slate-900">Fuel Logs</button>
-            <button className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-900">General Expenses</button>
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-slate-50/50 rounded-t-2xl">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button className="flex-1 sm:flex-none px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-lg text-sm font-bold text-slate-900">Fuel Logs</button>
+            <button className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-900">General Expenses</button>
           </div>
-          <button className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 bg-white px-3 py-1.5 border border-slate-200 rounded-lg">
+          <button className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 bg-white px-3 py-1.5 border border-slate-200 rounded-lg">
             <Filter className="w-4 h-4" /> Filter by vehicle...
           </button>
         </div>
