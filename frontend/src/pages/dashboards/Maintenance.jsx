@@ -184,6 +184,55 @@ const Maintenance = () => {
             </div>
           ))}
         </div>
+        
+        {/* Active Maintenance Tasks List */}
+        <div className="mt-12 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="mb-6 flex justify-between items-center">
+            <h3 className="text-xl font-bold text-slate-900">Active Service Tasks</h3>
+            <span className="px-3 py-1 bg-blue-100 text-blue-700 font-bold text-xs rounded-full">{history.length} Tasks</span>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Task ID</th>
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Date</th>
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Vehicle</th>
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Description</th>
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Status</th>
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase text-right">Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="py-8 text-center text-slate-500 font-medium">No service tasks found.</td>
+                  </tr>
+                ) : (
+                  history.map(task => (
+                    <tr key={task._id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-slate-900">#{task._id?.toString().slice(-6) || 'N/A'}</td>
+                      <td className="py-3 px-4 text-sm text-slate-600">{new Date(task.date).toLocaleDateString()}</td>
+                      <td className="py-3 px-4">
+                        <p className="font-semibold text-slate-900">{task.vehicle?.registrationNumber || 'Unknown'}</p>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-slate-700">{task.description}</td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${task.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                          {task.status || 'Open'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-sm font-bold text-slate-900 text-right">
+                        ₹{task.cost?.toLocaleString() || 0}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Modal */}
