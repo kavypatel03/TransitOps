@@ -1,8 +1,18 @@
 const Driver = require('../models/Driver');
+const User = require('../models/User');
 
 const getDrivers = async (req, res) => {
     try {
-        const drivers = await Driver.find();
+        const users = await User.find({ role: { $in: ['Driver', 'driver'] } });
+        const drivers = users.map(u => ({
+            _id: u._id,
+            name: u.name,
+            licenseNumber: `DL-${u.phone?.slice(-4) || '0000'}`,
+            licenseCategory: 'Commercial Class A',
+            contactNumber: u.phone,
+            safetyScore: 100,
+            status: 'Available'
+        }));
         res.status(200).json(drivers);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
-  MapPin, Calendar, Clock, Map, ShieldCheck, Navigation, CalendarCheck, AlertOctagon, Truck, User, Box, CheckCircle, X
+  MapPin, Calendar, Clock, Map, ShieldCheck, Navigation, CalendarCheck, AlertOctagon, Truck, User, Box, CheckCircle, X, Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -103,7 +104,141 @@ const getDistance = (source, dest) => {
   return matrix[source]?.[dest] || 500;
 };
 
+const DriverTripView = ({ activeTrips, user, handleUpdateTripStatus }) => {
+  const myTrip = activeTrips.find(t => t.driver?.name === user?.name) || activeTrips[0];
+  const [currentCheckpoint, setCurrentCheckpoint] = useState(0);
+  const [cps, setCps] = useState([
+    { label: 'Departed Origin Hub', time: null },
+    { label: 'Navigating Highway Corridor', time: null },
+    { label: 'Mid-way Transit Checkpoint', time: null },
+    { label: 'Destination Approaching', time: null }
+  ]);
+
+  const updateCheckpoint = () => {
+    if (currentCheckpoint < cps.length) {
+      const newCps = [...cps];
+      newCps[currentCheckpoint].time = new Date().toLocaleTimeString();
+      setCps(newCps);
+      setCurrentCheckpoint(p => p + 1);
+      toast.success('Trip location updated!');
+      
+      if (currentCheckpoint === cps.length - 1 && myTrip) {
+         handleUpdateTripStatus(myTrip._id, 'Completed');
+      }
+    }
+  };
+
+  if (!myTrip) {
+    return (
+      <DashboardLayout title="My Trip">
+        <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-100 shadow-sm mt-8">
+           <AlertOctagon className="w-12 h-12 text-slate-300 mb-4" />
+           <h3 className="text-xl font-bold text-slate-900">No Active Trips</h3>
+           <p className="text-slate-500">You currently do not have any trips assigned. Please wait for dispatch.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout title="My Trip Dashboard">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column: Trip Details & Checkpoints */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <h3 className="text-xl font-bold text-slate-900 mb-4 border-b border-slate-100 pb-4 flex items-center justify-between">
+              Current Assignment
+              <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">ACTIVE</span>
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Route</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <div className="w-0.5 h-6 bg-slate-200"></div>
+                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900 text-sm">{myTrip.source}</p>
+                    <p className="text-xs text-slate-400 mt-2">&nbsp;</p>
+                    <p className="font-bold text-slate-900 text-sm">{myTrip.destination}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t border-slate-100">
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Vehicle Details</p>
+                <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl">
+                  <Truck className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="font-semibold text-slate-900 text-sm">{myTrip.vehicle?.registrationNumber || 'Unknown'}</p>
+                    <p className="text-xs text-slate-500">{myTrip.vehicle?.modelName || 'Truck'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Cargo Weight</p>
+                <p className="font-bold text-slate-900 text-lg">{myTrip.cargoWeight || 0} <span className="text-sm font-medium text-slate-500">kg</span></p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <h3 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-4">Trip Timeline & Checkpoints</h3>
+            
+            <div className="space-y-4 relative">
+              <div className="absolute left-4 top-2 bottom-6 w-0.5 bg-slate-100 -z-10"></div>
+              {cps.map((cp, idx) => (
+                <div key={idx} className="flex gap-4 items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${cp.time ? 'bg-emerald-500 text-white' : idx === currentCheckpoint ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30' : 'bg-white border-2 border-slate-200 text-slate-300'}`}>
+                    {cp.time ? <Check className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className={`text-sm font-bold ${cp.time ? 'text-slate-900' : idx === currentCheckpoint ? 'text-blue-600' : 'text-slate-400'}`}>{cp.label}</p>
+                    {cp.time && <p className="text-xs text-slate-500 font-medium">Cleared at {cp.time}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button 
+              onClick={updateCheckpoint}
+              disabled={currentCheckpoint >= cps.length}
+              className="w-full mt-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <Navigation className="w-4 h-4" />
+              {currentCheckpoint >= cps.length ? 'Trip Completed' : 'Update Checkpoint'}
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column: Live Map */}
+        <div className="lg:col-span-2 bg-slate-200 rounded-2xl overflow-hidden shadow-sm border border-slate-100 h-[600px] lg:h-auto relative">
+          <div className="absolute top-4 left-4 right-4 z-[400] flex justify-between items-start pointer-events-none">
+             <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-lg border border-white pointer-events-auto">
+               <p className="text-xs font-bold text-slate-500 uppercase">Status</p>
+               <p className="text-sm font-bold text-emerald-600 flex items-center gap-2">
+                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                 GPS Tracking Active
+               </p>
+             </div>
+          </div>
+          <LiveTrackingMap source={myTrip.source} destination={myTrip.destination} />
+        </div>
+
+      </div>
+    </DashboardLayout>
+  );
+};
+
 const TripDispatcher = () => {
+  const { user } = useAuth();
+  const isDriver = (user?.role || '').toLowerCase().replace(/\s+/g, '_') === 'driver';
+
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [vehicles, setVehicles] = useState([]);
@@ -344,6 +479,10 @@ System Verified: YES
     const d = drivers.find(d => d._id === id);
     return d ? `${d.name} (${d.licenseNumber})` : 'Unknown';
   };
+
+  if (isDriver) {
+    return <DriverTripView activeTrips={activeTrips} user={user} handleUpdateTripStatus={handleUpdateTripStatus} />;
+  }
 
   return (
     <DashboardLayout title="New Trip Dispatch">

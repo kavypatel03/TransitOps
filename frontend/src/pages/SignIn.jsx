@@ -54,6 +54,8 @@ const SignIn = () => {
         navigate('/fleet');
       } else if (data.role === 'Driver' || data.role === 'driver') {
         navigate('/trips');
+      } else if (data.role === 'Safety Officer' || data.role === 'safety_officer') {
+        navigate('/drivers');
       } else {
         navigate('/dashboard');
       }
