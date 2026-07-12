@@ -6,7 +6,7 @@ import {
   Users, 
   Map, 
   Wrench, 
-  DollarSign, 
+  IndianRupee, 
   BarChart3, 
   Settings, 
   LogOut 
@@ -24,7 +24,7 @@ export const NAV_ITEMS = [
   { name: 'Driver Management', path: '/drivers', icon: Users, roles: ['fleet_manager', 'safety_officer'] },
   { name: 'Trip Dispatcher', path: '/trips', icon: Map, roles: ['fleet_manager', 'driver'] },
   { name: 'Maintenance', path: '/maintenance', icon: Wrench, roles: ['fleet_manager', 'driver', 'safety_officer'] },
-  { name: 'Expenses & Fuel', path: '/expenses', icon: DollarSign, roles: ['fleet_manager', 'financial_analyst'] },
+  { name: 'Expenses & Fuel', path: '/expenses', icon: IndianRupee, roles: ['fleet_manager', 'financial_analyst'] },
   { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['fleet_manager', 'safety_officer', 'financial_analyst'] },
   { name: 'Settings', path: '/settings', icon: Settings, roles: ['fleet_manager'] },
 ];

@@ -157,7 +157,7 @@ const Settings = () => {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-700">Currency</label>
                   <select className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
-                    <option>USD ($)</option>
+                    <option>INR (₹)</option>
                     <option>EUR (€)</option>
                     <option>GBP (£)</option>
                   </select>

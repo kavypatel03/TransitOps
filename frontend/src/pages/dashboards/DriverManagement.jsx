@@ -11,7 +11,9 @@ import {
   Plus,
   MoreHorizontal,
   Clock,
-  X
+  X,
+  Edit2,
+  Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -23,25 +25,99 @@ const DriverManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', id: '', phone: '', class: 'Class A' });
 
-  useEffect(() => {
-    const fetchDrivers = async () => {
-      try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/drivers', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setDrivers(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch drivers', err);
-      } finally {
-        setLoading(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({ id: '', name: '', licenseNumber: '', phone: '', class: 'Class A', status: 'Available' });
+
+  const fetchDrivers = async () => {
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/drivers', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setDrivers(data);
       }
-    };
+    } catch (err) {
+      console.error('Failed to fetch drivers', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDrivers();
   }, []);
+
+  const openEditModal = (driver) => {
+    setEditFormData({
+      id: driver._id,
+      name: driver.name || '',
+      licenseNumber: driver.licenseNumber || '',
+      phone: driver.contactNumber || '',
+      class: driver.licenseCategory || 'Class A',
+      status: driver.status || 'Available'
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const updatedDriver = {
+        name: editFormData.name,
+        licenseNumber: editFormData.licenseNumber,
+        contactNumber: editFormData.phone,
+        licenseCategory: editFormData.class,
+        status: editFormData.status
+      };
+
+      const res = await fetch(`http://localhost:5000/api/drivers/${editFormData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedDriver)
+      });
+
+      if (res.ok) {
+        toast.success('Driver updated successfully');
+        setIsEditModalOpen(false);
+        fetchDrivers();
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || 'Failed to update driver');
+      }
+    } catch (err) {
+      toast.error('An error occurred while updating driver');
+    }
+  };
+
+  const handleDelete = async (driver) => {
+    if (driver.status === 'On Trip') {
+      toast.error('Cannot delete driver while they are On Trip');
+      return;
+    }
+    if (!window.confirm('Are you sure you want to delete this driver?')) return;
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/drivers/${driver._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        toast.success('Driver deleted successfully');
+        fetchDrivers();
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || 'Failed to delete driver');
+      }
+    } catch (err) {
+      toast.error('An error occurred while deleting driver');
+    }
+  };
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -204,9 +280,18 @@ const DriverManagement = () => {
                     </span>
                   </td>
                   <td className="p-4 pr-6 text-right">
-                    <button className="p-2 text-slate-400 hover:text-slate-600">
-                      <MoreHorizontal className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2 text-slate-400">
+                      <button onClick={() => openEditModal(d)} className="p-1 hover:text-blue-600 transition-colors">
+                        <Edit2 className="w-5 h-5" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(d)} 
+                        className={`p-1 transition-colors ${d.status === 'On Trip' ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 cursor-pointer'}`}
+                        title={d.status === 'On Trip' ? "Cannot delete while on trip" : "Delete Driver"}
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -330,6 +415,56 @@ const DriverManagement = () => {
               <div className="mt-8 flex gap-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
                 <button type="submit" className="flex-1 px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800">Register</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Edit Driver</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
+                  <input type="text" required value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="John Doe" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">License ID</label>
+                  <input type="text" required value={editFormData.licenseNumber} onChange={e => setEditFormData({...editFormData, licenseNumber: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="TX-1234567" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Phone Number</label>
+                  <input type="text" required value={editFormData.phone} onChange={e => setEditFormData({...editFormData, phone: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="(555) 000-0000" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">License Class</label>
+                  <select value={editFormData.class} onChange={e => setEditFormData({...editFormData, class: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <option value="Class A">Class A</option>
+                    <option value="Class B">Class B</option>
+                    <option value="Class C">Class C</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Status</label>
+                  <select value={editFormData.status} onChange={e => setEditFormData({...editFormData, status: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <option value="Available">Available</option>
+                    <option value="On Trip">On Trip</option>
+                    <option value="Suspended">Suspended</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-8 flex gap-3">
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800">Update Driver</button>
               </div>
             </form>
           </div>

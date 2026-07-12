@@ -9,7 +9,7 @@ import {
   Plus,
   Map,
   Wrench,
-  DollarSign
+  IndianRupee
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { 
@@ -184,7 +184,7 @@ const Overview = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-900">Monthly Fuel Expenditure</h3>
-            <p className="text-sm text-slate-500">Cost analysis in USD ($)</p>
+            <p className="text-sm text-slate-500">Cost analysis in INR (₹)</p>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -325,7 +325,7 @@ const Overview = () => {
                 Generate Report
               </button>
               <button className="w-full flex items-center gap-3 bg-[#27272A] hover:bg-[#3F3F46] p-3 rounded-xl transition-colors text-sm font-medium">
-                <DollarSign className="w-4 h-4 text-slate-400" />
+                <IndianRupee className="w-4 h-4 text-slate-400" />
                 Log Fuel Expense
               </button>
             </div>

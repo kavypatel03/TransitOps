@@ -216,7 +216,7 @@ const Maintenance = () => {
                 </div>
                 <div className="space-y-1.5 w-32">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">EST. COST</label>
-                  <input type="text" placeholder="$ 0.00" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900" />
+                  <input type="text" placeholder="₹ 0.00" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900" />
                 </div>
               </div>
 
@@ -267,7 +267,7 @@ const Maintenance = () => {
                     <p className="text-xs text-slate-500 mb-1">{h.vehicle?.registrationNumber || 'Unknown Vehicle'}</p>
                     <div className="flex justify-between items-end">
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${h.status === 'Closed' ? 'text-emerald-500 bg-emerald-50' : 'text-orange-500 bg-orange-50'}`}>{h.status}</span>
-                      <span className="text-sm font-bold text-slate-900">${h.cost.toLocaleString()}</span>
+                      <span className="text-sm font-bold text-slate-900">₹{h.cost.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>

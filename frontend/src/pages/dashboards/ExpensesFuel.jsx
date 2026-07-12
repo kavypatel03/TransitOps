@@ -1,7 +1,7 @@
 import React from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
-  DollarSign, 
+  IndianRupee, 
   TrendingUp, 
   Wallet, 
   Leaf, 
@@ -106,14 +106,14 @@ const ExpensesFuel = () => {
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
           <div className="flex justify-between items-start mb-2">
             <div className="p-3 bg-blue-50 rounded-xl">
-              <DollarSign className="w-5 h-5 text-blue-500" />
+              <IndianRupee className="w-5 h-5 text-blue-500" />
             </div>
             <span className="flex items-center text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
               ↘ +12.5%
             </span>
           </div>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Monthly Fuel Cost</p>
-          <h3 className="text-3xl font-bold text-slate-900">$42,850</h3>
+          <h3 className="text-3xl font-bold text-slate-900">₹42,850</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -139,7 +139,7 @@ const ExpensesFuel = () => {
             </span>
           </div>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Total Expenses</p>
-          <h3 className="text-3xl font-bold text-slate-900">$68,200</h3>
+          <h3 className="text-3xl font-bold text-slate-900">₹68,200</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -174,25 +174,25 @@ const ExpensesFuel = () => {
             <BarChart data={trendData} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-              <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} tickFormatter={(val) => `$${val/1000}k`} />
+              <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} tickFormatter={(val) => `₹${val/1000}k`} />
               <Tooltip 
                 cursor={{fill: '#f8fafc'}}
                 contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
               />
-              <Bar yAxisId="left" dataKey="fuel" fill="#0f172a" radius={[4, 4, 0, 0]} barSize={32} name="Fuel Cost ($)" />
+              <Bar yAxisId="left" dataKey="fuel" fill="#0f172a" radius={[4, 4, 0, 0]} barSize={32} name="Fuel Cost (₹)" />
               
               {/* Fake line overlay to match design */}
-              <Line yAxisId="left" type="monotone" dataKey="general" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', stroke: '#fff', strokeWidth: 2}} name="General Expenses ($)" />
+              <Line yAxisId="left" type="monotone" dataKey="general" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', stroke: '#fff', strokeWidth: 2}} name="General Expenses (₹)" />
             </BarChart>
           </ResponsiveContainer>
         </div>
         
         <div className="flex justify-center items-center gap-6 mt-4 pt-4 border-t border-slate-50">
           <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
-            <div className="w-3 h-3 bg-[#0f172a] rounded"></div> Fuel Cost ($)
+            <div className="w-3 h-3 bg-[#0f172a] rounded"></div> Fuel Cost (₹)
           </div>
           <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
-            <div className="w-3 h-3 rounded-full border-2 border-[#10b981] bg-white"></div> General Expenses ($)
+            <div className="w-3 h-3 rounded-full border-2 border-[#10b981] bg-white"></div> General Expenses (₹)
           </div>
         </div>
       </div>
@@ -231,12 +231,12 @@ const ExpensesFuel = () => {
                   <td className="p-4 text-slate-600">{new Date(log.date).toLocaleDateString()}</td>
                   <td className="p-4 font-semibold text-slate-900">{log.vehicle?.registrationNumber || 'Unknown'}</td>
                   <td className="p-4 text-slate-600 flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-50 text-blue-500 rounded"><DollarSign className="w-3 h-3" /></div>
+                    <div className="p-1.5 bg-blue-50 text-blue-500 rounded"><IndianRupee className="w-3 h-3" /></div>
                     Fuel
                   </td>
                   <td className="p-4 text-slate-600">{log.liters || 0} L</td>
-                  <td className="p-4 text-slate-500">{log.liters ? `$${(log.cost/log.liters).toFixed(2)}` : '-'}</td>
-                  <td className="p-4 pr-6 font-bold text-slate-900">${log.cost.toLocaleString()}</td>
+                  <td className="p-4 text-slate-500">{log.liters ? `₹${(log.cost/log.liters).toFixed(2)}` : '-'}</td>
+                  <td className="p-4 pr-6 font-bold text-slate-900">₹{log.cost.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -282,7 +282,7 @@ const ExpensesFuel = () => {
                     <input type="number" step="0.01" required value={formData.volume} onChange={e => setFormData({...formData, volume: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="450" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Price per L ($)</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Price per L (₹)</label>
                     <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="1.42" />
                   </div>
                 </div>
