@@ -14,8 +14,11 @@ import {
 import toast from 'react-hot-toast';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const Maintenance = () => {
+  const { user } = useAuth();
+  const isDriver = (user?.role || '').toLowerCase().replace(/\s+/g, '_') === 'driver';
   const [vehicles, setVehicles] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,8 +37,22 @@ const Maintenance = () => {
         ]);
         
         if (vehRes.ok && maintRes.ok) {
-          setVehicles(await vehRes.json());
-          setHistory(await maintRes.json());
+          let fetchedVehicles = await vehRes.json();
+          let fetchedHistory = await maintRes.json();
+          
+          const normalizedRole = (user?.role || '').toLowerCase().replace(/\s+/g, '_');
+          if (normalizedRole === 'driver' && fetchedVehicles.length > 0) {
+            // Demo logic: assign the first vehicle to the driver and filter logs
+            const assignedVehicle = fetchedVehicles[0];
+            fetchedVehicles = [assignedVehicle];
+            fetchedHistory = fetchedHistory.filter(h => {
+              const hId = typeof h.vehicle === 'object' ? h.vehicle._id : h.vehicle;
+              return hId === assignedVehicle._id;
+            });
+          }
+          
+          setVehicles(fetchedVehicles);
+          setHistory(fetchedHistory);
         }
       } catch (err) {
         console.error('Failed to fetch data', err);
@@ -43,8 +60,10 @@ const Maintenance = () => {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   const getVehicleImg = (type) => {
     if (type?.includes('Van')) return '🚐';
@@ -69,7 +88,8 @@ const Maintenance = () => {
   return (
     <DashboardLayout title="Maintenance & Repairs">
       
-      {/* Top Metrics Cards */}
+      {/* Top Metrics Cards - Hidden for Drivers */}
+      {!isDriver && (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4 h-[140px]">
           <div className="p-4 bg-blue-50 rounded-2xl">
@@ -120,6 +140,7 @@ const Maintenance = () => {
           </div>
         </div>
       </div>
+      )}
 
       <div className="flex flex-col lg:flex-row gap-8">
         
@@ -127,15 +148,19 @@ const Maintenance = () => {
         <div className="flex-1">
           {/* Header/Filters */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-            <div className="flex bg-slate-100 p-1 rounded-lg">
-              <button className="px-4 py-1.5 text-sm font-bold bg-white text-slate-900 rounded-md shadow-sm">All Vehicles</button>
-              <button className="px-4 py-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900">Urgent</button>
-              <button className="px-4 py-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900">Scheduled</button>
-            </div>
+            {!isDriver && (
+              <div className="flex bg-slate-100 p-1 rounded-lg">
+                <button className="px-4 py-1.5 text-sm font-bold bg-white text-slate-900 rounded-md shadow-sm">All Vehicles</button>
+                <button className="px-4 py-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900">In Shop</button>
+                <button className="px-4 py-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900">Upcoming</button>
+              </div>
+            )}
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
-                <Filter className="w-4 h-4" /> Filters
-              </button>
+              {!isDriver && (
+                <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
+                  <Filter className="w-4 h-4" /> Filters
+                </button>
+              )}
               <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800">
                 <Plus className="w-4 h-4" /> Add Service Task
               </button>

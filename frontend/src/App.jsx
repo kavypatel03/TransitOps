@@ -27,7 +27,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           
           <Route path="/dashboard" element={
-            <ProtectedRoute allowedRoles={['driver', 'financial_analyst']}>
+            <ProtectedRoute allowedRoles={['financial_analyst']}>
               <Overview />
             </ProtectedRoute>
           } />
