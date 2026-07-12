@@ -13,14 +13,21 @@ import {
   Clock,
   X,
   Edit2,
-  Trash2
+  Trash2,
+  PhoneCall
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const DriverManagement = () => {
+  const { user } = useAuth();
+  const isSafetyOfficer = (user?.role || '').toLowerCase().replace(/\s+/g, '_') === 'safety_officer';
+  const [trips, setTrips] = useState([]);
+  const [safetyDriverDetailsModal, setSafetyDriverDetailsModal] = useState(null);
+
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,6 +45,14 @@ const DriverManagement = () => {
       const data = await res.json();
       if (res.ok) {
         setDrivers(data);
+      }
+
+      const tripsRes = await fetch('http://localhost:5000/api/trips', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const tripsData = await tripsRes.json();
+      if (tripsRes.ok) {
+        setTrips(tripsData);
       }
     } catch (err) {
       console.error('Failed to fetch drivers', err);
@@ -192,9 +207,11 @@ const DriverManagement = () => {
               <button onClick={exportToExcel} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
                 <Download className="w-4 h-4" /> Export Excel
               </button>
-              <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
-                <Plus className="w-4 h-4" /> Register Driver
-              </button>
+              {!isSafetyOfficer && (
+                <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
+                  <Plus className="w-4 h-4" /> Register Driver
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -250,16 +267,24 @@ const DriverManagement = () => {
                   </td>
                   <td className="p-4 pr-6 text-right">
                     <div className="flex items-center justify-end gap-2 text-slate-400">
-                      <button onClick={() => openEditModal(d)} className="p-1 hover:text-blue-600 transition-colors">
-                        <Edit2 className="w-5 h-5" />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(d)} 
-                        className={`p-1 transition-colors ${d.status === 'On Trip' ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 cursor-pointer'}`}
-                        title={d.status === 'On Trip' ? "Cannot delete while on trip" : "Delete Driver"}
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                      {isSafetyOfficer ? (
+                        <button onClick={() => setSafetyDriverDetailsModal(d)} className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 shadow-sm">
+                           View Details
+                        </button>
+                      ) : (
+                        <>
+                          <button onClick={() => openEditModal(d)} className="p-1 hover:text-blue-600 transition-colors">
+                            <Edit2 className="w-5 h-5" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(d)} 
+                            className={`p-1 transition-colors ${d.status === 'On Trip' ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 cursor-pointer'}`}
+                            title={d.status === 'On Trip' ? "Cannot delete while on trip" : "Delete Driver"}
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -362,6 +387,72 @@ const DriverManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Safety Officer Detailed Modal */}
+      {safetyDriverDetailsModal && isSafetyOfficer && (() => {
+        const d = safetyDriverDetailsModal;
+        const activeTrip = trips.find(t => t.driver?._id === d._id && t.status !== 'Completed' && t.status !== 'Cancelled');
+        const v = activeTrip?.vehicle;
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-xl">
+              <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2"><ShieldAlert className="w-5 h-5 text-red-500" /> Emergency Monitoring View</h2>
+                <button onClick={() => setSafetyDriverDetailsModal(null)} className="text-slate-400 hover:text-slate-600 bg-white p-2 rounded-full border border-slate-200 shadow-sm">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-4">
+                    <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">Driver Information</h3>
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      <p className="text-xs text-slate-400 font-bold uppercase">Name</p>
+                      <p className="font-semibold text-slate-800 text-lg">{d.name}</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      <p className="text-xs text-slate-400 font-bold uppercase">Contact</p>
+                      <p className="font-semibold text-slate-800 text-lg">{d.contactNumber}</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      <p className="text-xs text-slate-400 font-bold uppercase">Status</p>
+                      <p className={`font-semibold text-lg ${d.status === 'On Trip' ? 'text-blue-600' : 'text-slate-600'}`}>{d.status}</p>
+                    </div>
+                 </div>
+                 
+                 <div className="space-y-4">
+                    <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">Active Vehicle</h3>
+                    {v ? (
+                      <>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                          <p className="text-xs text-slate-400 font-bold uppercase">Model</p>
+                          <p className="font-semibold text-slate-800 text-lg">{v.modelName}</p>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                          <p className="text-xs text-slate-400 font-bold uppercase">Registration</p>
+                          <p className="font-semibold text-slate-800 text-lg">{v.registrationNumber}</p>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                          <p className="text-xs text-slate-400 font-bold uppercase">Location / Route</p>
+                          <p className="font-semibold text-slate-800 text-lg">{activeTrip.source} &rarr; {activeTrip.destination}</p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 h-full flex items-center justify-center text-center">
+                        <p className="text-slate-500 font-medium">Driver is not currently assigned to any active trip.</p>
+                      </div>
+                    )}
+                 </div>
+              </div>
+              <div className="p-6 bg-red-50 border-t border-red-100">
+                <a href={`tel:112`} className="w-full py-4 bg-red-600 text-white font-bold rounded-xl text-center shadow-lg shadow-red-600/20 hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+                   <PhoneCall className="w-5 h-5" /> Auto-Call Emergency Service
+                </a>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
     </DashboardLayout>
   );

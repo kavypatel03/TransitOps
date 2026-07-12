@@ -1,6 +1,6 @@
 const Trip = require('../models/Trip');
 const Vehicle = require('../models/Vehicle');
-const Driver = require('../models/Driver');
+const User = require('../models/User');
 
 const getTrips = async (req, res) => {
     try {
@@ -28,7 +28,7 @@ const createTrip = async (req, res) => {
         await newTrip.save();
 
         await Vehicle.findByIdAndUpdate(vehicleId, { status: 'On Trip' });
-        await Driver.findByIdAndUpdate(driverId, { status: 'On Trip' });
+        await User.findByIdAndUpdate(driverId, { status: 'On Trip' });
 
         res.status(201).json(newTrip);
     } catch (error) {
@@ -51,10 +51,10 @@ const updateTripStatus = async (req, res) => {
 
         if (status === 'Completed' || status === 'Cancelled') {
             await Vehicle.findByIdAndUpdate(trip.vehicle, { status: 'Available' });
-            await Driver.findByIdAndUpdate(trip.driver, { status: 'Available' });
+            await User.findByIdAndUpdate(trip.driver, { status: 'Available' });
         } else if (status === 'Dispatched') {
             await Vehicle.findByIdAndUpdate(trip.vehicle, { status: 'On Trip' });
-            await Driver.findByIdAndUpdate(trip.driver, { status: 'On Trip' });
+            await User.findByIdAndUpdate(trip.driver, { status: 'On Trip' });
         }
 
         res.status(200).json(trip);

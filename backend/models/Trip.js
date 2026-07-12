@@ -16,7 +16,7 @@ const tripSchema = new mongoose.Schema({
     },
     driver: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Driver',
+        ref: 'User',
         required: true
     },
     cargoWeight: {
