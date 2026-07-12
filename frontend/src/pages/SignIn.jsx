@@ -47,9 +47,9 @@ const SignIn = () => {
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('user', JSON.stringify(data));
       }
-      toast.success('Successfully logged in!');
       
       login(data);
+      toast.success('Successfully logged in!');
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.message);

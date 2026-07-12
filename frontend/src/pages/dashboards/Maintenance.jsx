@@ -8,8 +8,10 @@ import {
   Search, 
   Filter, 
   Plus, 
-  MoreVertical 
+  MoreVertical,
+  X
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 import { useState, useEffect } from 'react';
 
@@ -17,6 +19,8 @@ const Maintenance = () => {
   const [vehicles, setVehicles] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ id: '', name: '', type: 'Heavy Duty', date: '' });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,6 +49,22 @@ const Maintenance = () => {
   const getVehicleImg = (type) => {
     if (type?.includes('Van')) return '🚐';
     return '🚛';
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    const newVehicle = {
+      _id: Date.now().toString(),
+      registrationNumber: formData.id,
+      modelName: formData.name,
+      type: formData.type,
+      status: 'In Shop',
+      odometer: 0
+    };
+    setVehicles([newVehicle, ...vehicles]);
+    setIsModalOpen(false);
+    setFormData({ id: '', name: '', type: 'Heavy Duty', date: '' });
+    toast.success('Service task added successfully (Mock)');
   };
   return (
     <DashboardLayout title="Maintenance & Repairs">
@@ -116,7 +136,7 @@ const Maintenance = () => {
               <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
                 <Filter className="w-4 h-4" /> Filters
               </button>
-              <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800">
+              <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800">
                 <Plus className="w-4 h-4" /> Add Service Task
               </button>
             </div>
@@ -278,6 +298,48 @@ const Maintenance = () => {
 
         </div>
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Add Service Task</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleRegister} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Vehicle ID</label>
+                  <input type="text" required value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="FL-1234-TX" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Vehicle Name</label>
+                  <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="Volvo VNL" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Vehicle Type</label>
+                  <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <option value="Heavy Duty">Heavy Duty</option>
+                    <option value="Semi-Trailer">Semi-Trailer</option>
+                    <option value="Delivery Van">Delivery Van</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Service Date</label>
+                  <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
+                </div>
+              </div>
+              <div className="mt-8 flex gap-3">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800">Save Task</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </DashboardLayout>
   );

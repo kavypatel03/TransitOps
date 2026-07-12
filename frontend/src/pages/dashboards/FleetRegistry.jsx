@@ -12,14 +12,18 @@ import {
   Edit2,
   Trash2,
   MoreHorizontal,
-  Search
+  Search,
+  X
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 import { useState, useEffect } from 'react';
 
 const FleetRegistry = () => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ reg: '', name: '', model: '', type: 'Semi-Trailer', capacity: '', cost: '' });
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -48,6 +52,24 @@ const FleetRegistry = () => {
       case 'In Shop': return 'bg-orange-50 text-orange-600';
       default: return 'bg-slate-100 text-slate-500';
     }
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    const newVehicle = {
+      _id: Date.now().toString(),
+      registrationNumber: formData.reg,
+      modelName: `${formData.name} ${formData.model}`,
+      type: formData.type,
+      maxLoadCapacity: parseFloat(formData.capacity.replace(/,/g, '')) || 0,
+      odometer: 0,
+      acquisitionCost: parseFloat(formData.cost.replace(/,/g, '').replace('$', '')) || 0,
+      status: 'Available'
+    };
+    setVehicles([newVehicle, ...vehicles]);
+    setIsModalOpen(false);
+    setFormData({ reg: '', name: '', model: '', type: 'Semi-Trailer', capacity: '', cost: '' });
+    toast.success('Vehicle added successfully (Mock)');
   };
   return (
     <DashboardLayout title="Vehicle Registry">
@@ -122,7 +144,7 @@ const FleetRegistry = () => {
               <Download className="w-4 h-4" />
               Export
             </button>
-            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
+            <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
               <Plus className="w-4 h-4" />
               Add Vehicle
             </button>
@@ -283,6 +305,55 @@ const FleetRegistry = () => {
         </div>
 
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Add New Vehicle</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleRegister} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Registration Plate</label>
+                  <input type="text" required value={formData.reg} onChange={e => setFormData({...formData, reg: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="ABC-1234" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Make & Name</label>
+                  <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="Volvo FH16" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Model / Year</label>
+                  <input type="text" required value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="2024 Heavy Duty" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Type</label>
+                    <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                      <option value="Semi-Trailer">Semi-Trailer</option>
+                      <option value="Flatbed">Flatbed</option>
+                      <option value="Box Truck">Box Truck</option>
+                      <option value="Refrigerated">Refrigerated</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Capacity</label>
+                    <input type="text" required value={formData.capacity} onChange={e => setFormData({...formData, capacity: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="40,000 kg" />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-8 flex gap-3">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800">Save Vehicle</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </DashboardLayout>
   );
