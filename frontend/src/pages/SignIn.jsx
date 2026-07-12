@@ -50,7 +50,11 @@ const SignIn = () => {
       
       login(data);
       toast.success('Successfully logged in!');
-      navigate('/dashboard');
+      if (data.role === 'Fleet Manager' || data.role === 'fleet_manager') {
+        navigate('/fleet');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       toast.error(err.message);
     } finally {

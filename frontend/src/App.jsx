@@ -27,43 +27,43 @@ function App() {
           <Route path="/home" element={<Home />} />
           
           <Route path="/dashboard" element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['driver', 'financial_analyst']}>
               <Overview />
             </ProtectedRoute>
           } />
 
           <Route path="/fleet" element={
-            <ProtectedRoute allowedRoles={['Fleet Manager', 'Financial Analyst']}>
+            <ProtectedRoute allowedRoles={['fleet_manager', 'financial_analyst']}>
               <FleetRegistry />
             </ProtectedRoute>
           } />
 
           <Route path="/drivers" element={
-            <ProtectedRoute allowedRoles={['Fleet Manager', 'Safety Officer']}>
+            <ProtectedRoute allowedRoles={['fleet_manager', 'safety_officer']}>
               <DriverManagement />
             </ProtectedRoute>
           } />
 
           <Route path="/trips" element={
-            <ProtectedRoute allowedRoles={['Fleet Manager', 'Driver']}>
+            <ProtectedRoute allowedRoles={['fleet_manager', 'driver']}>
               <TripDispatcher />
             </ProtectedRoute>
           } />
 
           <Route path="/maintenance" element={
-            <ProtectedRoute allowedRoles={['Fleet Manager', 'Driver', 'Safety Officer']}>
+            <ProtectedRoute allowedRoles={['fleet_manager', 'driver', 'safety_officer']}>
               <Maintenance />
             </ProtectedRoute>
           } />
 
           <Route path="/expenses" element={
-            <ProtectedRoute allowedRoles={['Fleet Manager', 'Financial Analyst']}>
+            <ProtectedRoute allowedRoles={['fleet_manager', 'financial_analyst']}>
               <ExpensesFuel />
             </ProtectedRoute>
           } />
 
           <Route path="/reports" element={
-            <ProtectedRoute allowedRoles={['Fleet Manager', 'Financial Analyst', 'Safety Officer']}>
+            <ProtectedRoute allowedRoles={['financial_analyst', 'safety_officer']}>
               <Reports />
             </ProtectedRoute>
           } />

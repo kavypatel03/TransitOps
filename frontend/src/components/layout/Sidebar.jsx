@@ -19,13 +19,13 @@ import { twMerge } from 'tailwind-merge';
 const cn = (...inputs) => twMerge(clsx(inputs));
 
 export const NAV_ITEMS = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['fleet_manager', 'driver', 'financial_analyst'] },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['driver', 'financial_analyst'] },
   { name: 'Fleet Registry', path: '/fleet', icon: Truck, roles: ['fleet_manager', 'financial_analyst'] },
   { name: 'Driver Management', path: '/drivers', icon: Users, roles: ['fleet_manager', 'safety_officer'] },
   { name: 'Trip Dispatcher', path: '/trips', icon: Map, roles: ['fleet_manager', 'driver'] },
   { name: 'Maintenance', path: '/maintenance', icon: Wrench, roles: ['fleet_manager', 'driver', 'safety_officer'] },
   { name: 'Expenses & Fuel', path: '/expenses', icon: IndianRupee, roles: ['fleet_manager', 'financial_analyst'] },
-  { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['fleet_manager', 'safety_officer', 'financial_analyst'] },
+  { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['safety_officer', 'financial_analyst'] },
   { name: 'Settings', path: '/settings', icon: Settings, roles: ['fleet_manager'] },
 ];
 
