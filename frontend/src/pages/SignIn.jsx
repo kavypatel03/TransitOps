@@ -52,6 +52,8 @@ const SignIn = () => {
       toast.success('Successfully logged in!');
       if (data.role === 'Fleet Manager' || data.role === 'fleet_manager') {
         navigate('/fleet');
+      } else if (data.role === 'Driver' || data.role === 'driver') {
+        navigate('/trips');
       } else {
         navigate('/dashboard');
       }

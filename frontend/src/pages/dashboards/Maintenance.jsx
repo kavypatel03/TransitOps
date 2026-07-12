@@ -14,8 +14,11 @@ import {
 import toast from 'react-hot-toast';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const Maintenance = () => {
+  const { user } = useAuth();
+  const isDriver = (user?.role || '').toLowerCase().replace(/\s+/g, '_') === 'driver';
   const [vehicles, setVehicles] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,8 +38,21 @@ const Maintenance = () => {
         ]);
         
         if (vehRes.ok && maintRes.ok) {
-          setVehicles(await vehRes.json());
-          setHistory(await maintRes.json());
+          let fetchedVehicles = await vehRes.json();
+          let fetchedHistory = await maintRes.json();
+
+          const normalizedRole = (user?.role || '').toLowerCase().replace(/\s+/g, '_');
+          if (normalizedRole === 'driver' && fetchedVehicles.length > 0) {
+            const assignedVehicle = fetchedVehicles[0];
+            fetchedVehicles = [assignedVehicle];
+            fetchedHistory = fetchedHistory.filter(h => {
+              const hId = typeof h.vehicle === 'object' ? h.vehicle._id : h.vehicle;
+              return hId === assignedVehicle._id;
+            });
+          }
+
+          setVehicles(fetchedVehicles);
+          setHistory(fetchedHistory);
         }
       } catch (err) {
         console.error('Failed to fetch data', err);
@@ -44,8 +60,10 @@ const Maintenance = () => {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   const getVehicleImg = (type) => {
     if (type?.includes('Van')) return '🚐';
@@ -93,15 +111,21 @@ const Maintenance = () => {
         {/* Header/Filters */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <div className="flex bg-slate-100 p-1 rounded-lg">
-            <button 
-              onClick={() => setActiveFilter('All Vehicles')}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeFilter === 'All Vehicles' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}>All Vehicles</button>
-            <button 
-              onClick={() => setActiveFilter('Urgent')}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeFilter === 'Urgent' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}>Urgent</button>
-            <button 
-              onClick={() => setActiveFilter('Scheduled')}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeFilter === 'Scheduled' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}>Scheduled</button>
+            {!isDriver ? (
+              <>
+                <button 
+                  onClick={() => setActiveFilter('All Vehicles')}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeFilter === 'All Vehicles' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}>All Vehicles</button>
+                <button 
+                  onClick={() => setActiveFilter('Urgent')}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeFilter === 'Urgent' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}>Urgent</button>
+                <button 
+                  onClick={() => setActiveFilter('Scheduled')}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeFilter === 'Scheduled' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}>Scheduled</button>
+              </>
+            ) : (
+              <button className="px-4 py-1.5 text-sm font-bold bg-white text-slate-900 rounded-md shadow-sm">Your Vehicle</button>
+            )}
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
 
