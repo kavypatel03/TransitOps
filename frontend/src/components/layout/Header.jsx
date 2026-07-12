@@ -1,13 +1,21 @@
 
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Menu } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const Header = ({ title = "Dashboard" }) => {
+const Header = ({ title = "Dashboard", onMenuClick }) => {
   const { user } = useAuth();
 
   return (
-    <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8">
-      <h1 className="text-xl font-semibold text-slate-800">{title}</h1>
+    <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8">
+      <div className="flex items-center gap-4">
+        <button 
+          onClick={onMenuClick}
+          className="p-2 -ml-2 text-slate-500 hover:text-slate-900 lg:hidden rounded-lg hover:bg-slate-100 transition-colors"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <h1 className="text-xl font-semibold text-slate-800">{title}</h1>
+      </div>
 
       <div className="flex items-center gap-6">
         {/* Search Bar */}

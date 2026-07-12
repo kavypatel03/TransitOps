@@ -27,57 +27,10 @@ const Settings = () => {
   return (
     <DashboardLayout title="System Settings">
       
-      <div className="w-full flex flex-col md:flex-row gap-8">
+      <div className="max-w-4xl mx-auto">
         
-        {/* Settings Navigation Sidebar */}
-        <div className="w-full md:w-64 shrink-0">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 space-y-1">
-            <div className="px-4 py-2 mb-2">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Personal</h3>
-            </div>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 bg-slate-50 text-slate-900 font-semibold rounded-xl text-sm transition-colors">
-              <User className="w-4 h-4" /> Profile & Account
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium rounded-xl text-sm transition-colors">
-              <Bell className="w-4 h-4" /> Notifications
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium rounded-xl text-sm transition-colors">
-              <Lock className="w-4 h-4" /> Security & Privacy
-            </button>
-
-            <div className="px-4 py-2 mt-4 mb-2">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Workspace</h3>
-            </div>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium rounded-xl text-sm transition-colors">
-              <Building className="w-4 h-4" /> Enterprise Details
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium rounded-xl text-sm transition-colors">
-              <CreditCard className="w-4 h-4" /> Billing & Plans
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium rounded-xl text-sm transition-colors">
-              <Database className="w-4 h-4" /> Data Integrations
-            </button>
-            
-            <div className="px-4 py-2 mt-4 mb-2">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Preferences</h3>
-            </div>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium rounded-xl text-sm transition-colors">
-              <Globe className="w-4 h-4" /> Language & Region
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium rounded-xl text-sm transition-colors">
-              <Smartphone className="w-4 h-4" /> Device Management
-            </button>
-
-            <div className="my-2 border-t border-slate-100"></div>
-            
-            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 font-bold rounded-xl text-sm transition-colors">
-              <LogOut className="w-4 h-4" /> Sign Out
-            </button>
-          </div>
-        </div>
-
         {/* Settings Content Area */}
-        <div className="flex-1 space-y-6">
+        <div className="w-full space-y-6">
           
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
             <h2 className="text-xl font-bold text-slate-900 mb-6 pb-4 border-b border-slate-100">Profile Information</h2>
