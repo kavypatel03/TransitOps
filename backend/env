@@ -1,3 +1,0 @@
-PORT=5000
-MONGO_URI=mongodb://joshimeet666_db_user:mO3zabiS1maYCbWx@ac-vqofjjk-shard-00-00.6nidm8b.mongodb.net:27017,ac-vqofjjk-shard-00-01.6nidm8b.mongodb.net:27017,ac-vqofjjk-shard-00-02.6nidm8b.mongodb.net:27017/transitops?ssl=true&authSource=admin&retryWrites=true&w=majority
-JWT_SECRET=super_secret_hackathon_key
