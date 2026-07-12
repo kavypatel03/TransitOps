@@ -6,7 +6,7 @@ const Header = ({ title = "Dashboard", onMenuClick, isSidebarOpen }) => {
   const { user } = useAuth();
 
   return (
-    <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8">
+    <header className="h-16 sm:h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 md:px-8">
       <div className="flex items-center gap-4">
         {!isSidebarOpen && (
           <button 
@@ -16,7 +16,7 @@ const Header = ({ title = "Dashboard", onMenuClick, isSidebarOpen }) => {
             <Menu className="w-6 h-6" />
           </button>
         )}
-        <h1 className="text-xl font-semibold text-slate-800">{title}</h1>
+        <h1 className="text-lg sm:text-xl font-semibold text-slate-800 truncate">{title}</h1>
       </div>
 
       <div className="flex items-center gap-6">

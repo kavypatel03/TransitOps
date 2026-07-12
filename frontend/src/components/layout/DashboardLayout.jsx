@@ -41,7 +41,7 @@ const DashboardLayout = ({ children, title }) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title={title} onMenuClick={toggleSidebar} isSidebarOpen={isSidebarOpen} />
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-scroll bg-slate-50 p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto bg-slate-50 p-4 md:p-8">
           {children}
         </main>
       </div>

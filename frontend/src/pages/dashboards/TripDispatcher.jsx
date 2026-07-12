@@ -488,21 +488,21 @@ System Verified: YES
     <DashboardLayout title="New Trip Dispatch">
       <div className="w-full">
         {/* Wizard Header */}
-        <div className="bg-white p-8 rounded-t-2xl border border-slate-100 border-b-0">
-          <div className="flex justify-between items-start mb-10">
+        <div className="bg-white p-4 sm:p-8 rounded-t-2xl border border-slate-100 border-b-0">
+          <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Dispatcher Wizard</h2>
-              <p className="text-slate-500">Configure and activate a new logistics route with automated fleet verification.</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">Dispatcher Wizard</h2>
+              <p className="text-slate-500 text-sm">Configure and activate a new logistics route with automated fleet verification.</p>
             </div>
-            <div className="text-right">
-              <p className="text-sm font-semibold text-slate-900">Step {currentStep} of 5</p>
-              <p className="text-lg font-bold text-slate-900">{stepTitles[currentStep-1]}</p>
+            <div className="sm:text-right text-left shrink-0">
+              <p className="text-xs sm:text-sm font-semibold text-slate-900">Step {currentStep} of 5</p>
+              <p className="text-base sm:text-lg font-bold text-slate-900">{stepTitles[currentStep-1]}</p>
             </div>
           </div>
 
           {/* Stepper */}
-          <div className="flex justify-between relative px-4">
-            <div className="absolute top-4 left-12 right-12 h-0.5 bg-slate-100 -z-10"></div>
+          <div className="flex justify-between relative px-2 sm:px-4">
+            <div className="absolute top-4 left-6 right-6 sm:left-12 sm:right-12 h-0.5 bg-slate-100 -z-10"></div>
             {steps.map((label, index) => {
               const stepNum = index + 1;
               const isActive = stepNum === currentStep;
@@ -512,7 +512,7 @@ System Verified: YES
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${isActive || isPast ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'}`}>
                     {isPast ? <CheckCircle className="w-5 h-5 text-emerald-400" /> : stepNum}
                   </div>
-                  <span className={`text-xs font-bold tracking-wider ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>{label}</span>
+                  <span className={`text-[10px] sm:text-xs font-bold tracking-wider hidden sm:block ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>{label}</span>
                 </div>
               );
             })}
@@ -520,15 +520,15 @@ System Verified: YES
         </div>
 
         {/* Wizard Form Content */}
-        <div className="bg-slate-50/50 p-8 border border-slate-100 rounded-b-2xl shadow-sm pb-12">
+        <div className="bg-slate-50/50 p-4 sm:p-8 border border-slate-100 rounded-b-2xl shadow-sm pb-12">
           
-          <div className="bg-white p-8 rounded-2xl border border-slate-200 mb-8 min-h-[300px]">
-            <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+          <div className="bg-white p-4 sm:p-8 rounded-2xl border border-slate-200 mb-8 min-h-[300px]">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 border-b border-slate-100 pb-4 gap-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">{stepTitles[currentStep-1]}</h3>
-                <p className="text-sm text-slate-500">{stepDescriptions[currentStep-1]}</p>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">{stepTitles[currentStep-1]}</h3>
+                <p className="text-xs sm:text-sm text-slate-500">{stepDescriptions[currentStep-1]}</p>
               </div>
-              <span className="flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
+              <span className="w-fit flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold shrink-0">
                 <ShieldCheck className="w-4 h-4" /> System Verified
               </span>
             </div>
@@ -788,7 +788,7 @@ System Verified: YES
           </div>
           
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="border-b border-slate-200">
                   <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Route</th>

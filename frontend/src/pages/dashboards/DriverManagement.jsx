@@ -201,7 +201,7 @@ const DriverManagement = () => {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="border-b border-slate-100 text-slate-500 text-sm font-medium">
                 <th className="p-4 pl-6">Driver Details</th>
