@@ -5,14 +5,16 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  const login = (role) => {
-    // Mock user profile based on role
-    const profile = {
-      name: role === 'fleet_manager' ? 'Admin User' : 'Test User',
-      role: role,
-      email: `${role}@transitops.io`
+  const login = (userData) => {
+    // Map backend role to frontend expected strings
+    const roleMapping = {
+        'Fleet Manager': 'fleet_manager',
+        'Driver': 'driver',
+        'Safety Officer': 'safety_officer',
+        'Financial Analyst': 'financial_analyst'
     };
-    setUser(profile);
+    const mappedRole = roleMapping[userData.role] || userData.role;
+    setUser({ ...userData, role: mappedRole });
   };
 
   const logout = () => {

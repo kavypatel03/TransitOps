@@ -8,7 +8,6 @@ import logoImg from '../assets/logo.png';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('fleet_manager');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -50,7 +49,7 @@ const SignIn = () => {
       }
       toast.success('Successfully logged in!');
       
-      login(selectedRole);
+      login(data);
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.message);
@@ -163,23 +162,7 @@ const SignIn = () => {
               </label>
             </div>
 
-            {/* Role Selector (For Testing) */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider" htmlFor="role">
-                Demo Role Access
-              </label>
-              <select
-                id="role"
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900"
-              >
-                <option value="fleet_manager">Fleet Manager (Full Access)</option>
-                <option value="driver">Driver (Limited Access)</option>
-                <option value="safety_officer">Safety Officer (Compliance)</option>
-                <option value="financial_analyst">Financial Analyst (Finance)</option>
-              </select>
-            </div>
+
 
             {/* Submit Button */}
             <button

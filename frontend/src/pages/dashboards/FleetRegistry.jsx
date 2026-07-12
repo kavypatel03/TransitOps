@@ -15,15 +15,40 @@ import {
   Search
 } from 'lucide-react';
 
-const vehicles = [
-  { reg: 'ABC-1234', name: 'Volvo FH16', model: '2023 Heavy Duty', type: 'Semi-Trailer', capacity: '40,000 kg', odo: '12,450 km', cost: '$145,000', status: 'Available', statusColor: 'bg-emerald-50 text-emerald-600' },
-  { reg: 'XYZ-9876', name: 'Mercedes Actros', model: '2022 Long Haul', type: 'Flatbed', capacity: '32,000 kg', odo: '84,100 km', cost: '$128,500', status: 'On Trip', statusColor: 'bg-blue-50 text-blue-600' },
-  { reg: 'LMN-5544', name: 'Scania R500', model: '2021 V8 Special', type: 'Refrigerated', capacity: '28,000 kg', odo: '156,000 km', cost: '$115,000', status: 'In Shop', statusColor: 'bg-orange-50 text-orange-600' },
-  { reg: 'KRT-8822', name: 'Isuzu Forward', model: '2020 City Logistics', type: 'Box Truck', capacity: '12,000 kg', odo: '45,200 km', cost: '$65,000', status: 'Available', statusColor: 'bg-emerald-50 text-emerald-600' },
-  { reg: 'DEF-4433', name: 'DAF XF', model: '2019 Euro 6', type: 'Tanker', capacity: '35,000 kg', odo: '210,500 km', cost: '$98,000', status: 'Retired', statusColor: 'bg-slate-100 text-slate-500' },
-];
+import { useState, useEffect } from 'react';
 
 const FleetRegistry = () => {
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await fetch('http://localhost:5000/api/vehicles', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setVehicles(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch vehicles', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVehicles();
+  }, []);
+
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'Available': return 'bg-emerald-50 text-emerald-600';
+      case 'On Trip': return 'bg-blue-50 text-blue-600';
+      case 'In Shop': return 'bg-orange-50 text-orange-600';
+      default: return 'bg-slate-100 text-slate-500';
+    }
+  };
   return (
     <DashboardLayout title="Vehicle Registry">
       
@@ -121,17 +146,19 @@ const FleetRegistry = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {vehicles.map((v) => (
-                <tr key={v.reg} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                  <td className="p-4 pl-6 font-semibold text-slate-900">{v.reg}</td>
-                  <td className="p-4 text-slate-600">{v.name}</td>
-                  <td className="p-4 text-slate-500">{v.model}</td>
+              {loading ? (
+                <tr><td colSpan="9" className="p-4 text-center text-slate-500">Loading vehicles...</td></tr>
+              ) : vehicles.map((v) => (
+                <tr key={v._id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                  <td className="p-4 pl-6 font-semibold text-slate-900">{v.registrationNumber}</td>
+                  <td className="p-4 text-slate-600">{v.modelName}</td>
+                  <td className="p-4 text-slate-500">{v.modelName}</td>
                   <td className="p-4 text-slate-500">{v.type}</td>
-                  <td className="p-4 text-slate-600">{v.capacity}</td>
-                  <td className="p-4 text-slate-500">{v.odo}</td>
-                  <td className="p-4 text-slate-900 font-medium">{v.cost}</td>
+                  <td className="p-4 text-slate-600">{v.maxLoadCapacity.toLocaleString()} kg</td>
+                  <td className="p-4 text-slate-500">{v.odometer.toLocaleString()} km</td>
+                  <td className="p-4 text-slate-900 font-medium">${v.acquisitionCost.toLocaleString()}</td>
                   <td className="p-4">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${v.statusColor}`}>
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(v.status)}`}>
                       {v.status}
                     </span>
                   </td>

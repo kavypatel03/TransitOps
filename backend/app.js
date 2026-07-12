@@ -28,6 +28,11 @@ app.use(session({
 
 // Route Imports
 const authRoutes = require('./routes/authRoutes');
+const vehicleRoutes = require('./routes/vehicleRoutes');
+const driverRoutes = require('./routes/driverRoutes');
+const tripRoutes = require('./routes/tripRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
 
 // Root API Route
 app.get('/', (req, res) => {
@@ -36,5 +41,10 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/', authRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/drivers', driverRoutes);
+app.use('/api/trips', tripRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
 
 module.exports = app;
