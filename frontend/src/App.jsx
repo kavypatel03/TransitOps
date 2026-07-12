@@ -15,6 +15,7 @@ import Maintenance from './pages/dashboards/Maintenance';
 import ExpensesFuel from './pages/dashboards/ExpensesFuel';
 import Reports from './pages/dashboards/Reports';
 import Settings from './pages/dashboards/Settings';
+import SafetyHistory from './pages/dashboards/SafetyHistory';
 
 function App() {
   return (
@@ -51,7 +52,7 @@ function App() {
           } />
 
           <Route path="/maintenance" element={
-            <ProtectedRoute allowedRoles={['fleet_manager', 'driver', 'safety_officer']}>
+            <ProtectedRoute allowedRoles={['fleet_manager', 'driver']}>
               <Maintenance />
             </ProtectedRoute>
           } />
@@ -63,8 +64,14 @@ function App() {
           } />
 
           <Route path="/reports" element={
-            <ProtectedRoute allowedRoles={['financial_analyst', 'safety_officer']}>
+            <ProtectedRoute allowedRoles={['financial_analyst']}>
               <Reports />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/safety-history" element={
+            <ProtectedRoute allowedRoles={['safety_officer']}>
+              <SafetyHistory />
             </ProtectedRoute>
           } />
 

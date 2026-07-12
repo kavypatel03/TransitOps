@@ -10,7 +10,8 @@ import {
   BarChart3, 
   Settings, 
   LogOut,
-  X
+  X,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import logoImg from '../../assets/logo.png';
@@ -24,9 +25,10 @@ export const NAV_ITEMS = [
   { name: 'Fleet Registry', path: '/fleet', icon: Truck, roles: ['fleet_manager', 'financial_analyst'] },
   { name: 'Driver Management', path: '/drivers', icon: Users, roles: ['fleet_manager', 'safety_officer'] },
   { name: 'Trip Dispatcher', path: '/trips', icon: Map, roles: ['fleet_manager', 'driver'] },
-  { name: 'Maintenance', path: '/maintenance', icon: Wrench, roles: ['fleet_manager', 'driver', 'safety_officer'] },
+  { name: 'Maintenance', path: '/maintenance', icon: Wrench, roles: ['fleet_manager', 'driver'] },
   { name: 'Expenses & Fuel', path: '/expenses', icon: IndianRupee, roles: ['fleet_manager', 'financial_analyst'] },
-  { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['safety_officer', 'financial_analyst'] },
+  { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['financial_analyst'] },
+  { name: 'Recent Trips', path: '/safety-history', icon: ShieldCheck, roles: ['safety_officer'] },
   { name: 'Settings', path: '/settings', icon: Settings, roles: ['fleet_manager'] },
 ];
 
