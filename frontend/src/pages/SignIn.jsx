@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Lock, Eye, EyeOff, Activity, CheckCircle, ShieldCheck, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -8,13 +8,20 @@ import logoImg from '../assets/logo.png';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('fleet_manager');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  useEffect(() => {
+    // If user is already logged in, instantly redirect to home
+    const user = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (user) {
+      navigate('/home');
+    }
+  }, [navigate]);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -40,9 +47,9 @@ const SignIn = () => {
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('user', JSON.stringify(data));
       }
-      toast.success('Successfully logged in!');
       
-      login(selectedRole);
+      login(data);
+      toast.success('Successfully logged in!');
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.message);

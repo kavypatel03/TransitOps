@@ -1,30 +1,27 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
-    // Frontend guard checking if user is logged in
     const user = localStorage.getItem('user') || sessionStorage.getItem('user');
     if (!user) {
       toast.error('Please Login to access Full App', { id: 'auth-error' });
       navigate('/');
+    } else {
+      // Redirect to proper dashboard
+      navigate('/dashboard');
     }
   }, [navigate]);
 
   const handleLogout = async () => {
     try {
-      // Call backend to destroy session cookie
-      await fetch('http://localhost:5000/userLogout', {
-        method: 'POST',
-      });
-      // Clear frontend state
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
+      await fetch('http://localhost:5000/userLogout', { method: 'POST' });
+      logout();
       toast.success('Logged out successfully');
       navigate('/');
     } catch (err) {
