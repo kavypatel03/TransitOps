@@ -1,8 +1,7 @@
-import { useState } from 'react';
-
+import React from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
-  DollarSign, 
+  IndianRupee, 
   TrendingUp, 
   Wallet, 
   Leaf, 
@@ -11,8 +10,10 @@ import {
   Filter,
   X
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { 
+  LineChart, 
   Line, 
   BarChart, 
   Bar, 
@@ -32,18 +33,33 @@ const trendData = [
   { month: 'Jun', fuel: 39000, general: 22000 },
 ];
 
-const initialLogs = [
-  { id: 'FL-9021', date: '2024-06-12', vehicle: 'VOL-FH16-01', station: 'Shell Express A4', volume: '450 L', price: '$1.42', total: '$639.00' },
-  { id: 'FL-9022', date: '2024-06-12', vehicle: 'MB-ACT-45', station: 'BP Logistics Hub', volume: '380 L', price: '$1.39', total: '$528.20' },
-  { id: 'FL-9023', date: '2024-06-11', vehicle: 'SCA-R500-12', station: 'Circle K Depot', volume: '520 L', price: '$1.45', total: '$754.00' },
-  { id: 'FL-9024', date: '2024-06-11', vehicle: 'MAN-TGX-08', station: 'Shell Express A4', volume: '410 L', price: '$1.42', total: '$582.20' },
-  { id: 'FL-9025', date: '2024-06-10', vehicle: 'VOL-FH16-05', station: 'Texaco Truck Stop', volume: '490 L', price: '$1.40', total: '$686.00' },
-];
-
 const ExpensesFuel = () => {
-  const [logs, setLogs] = useState(initialLogs);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ date: '', vehicle: '', station: '', volume: '', price: '' });
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await fetch('http://localhost:5000/api/expenses', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setExpenses(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch expenses', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExpenses();
+  }, []);
+
+  const fuelLogs = expenses.filter(e => e.type === 'Fuel');
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -51,16 +67,16 @@ const ExpensesFuel = () => {
     const priceNum = parseFloat(formData.price) || 0;
     
     const newLog = {
-      id: `FL-${Math.floor(1000 + Math.random() * 9000)}`,
+      _id: `FL-${Math.floor(1000 + Math.random() * 9000)}`,
       date: formData.date,
-      vehicle: formData.vehicle,
+      vehicle: { registrationNumber: formData.vehicle },
       station: formData.station,
-      volume: `${volNum} L`,
-      price: `$${priceNum.toFixed(2)}`,
-      total: `$${(volNum * priceNum).toFixed(2)}`
+      type: 'Fuel',
+      liters: volNum,
+      cost: volNum * priceNum
     };
     
-    setLogs([newLog, ...logs]);
+    setExpenses([newLog, ...expenses]);
     setIsModalOpen(false);
     setFormData({ date: '', vehicle: '', station: '', volume: '', price: '' });
     toast.success('Expense added successfully');
@@ -90,14 +106,14 @@ const ExpensesFuel = () => {
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
           <div className="flex justify-between items-start mb-2">
             <div className="p-3 bg-blue-50 rounded-xl">
-              <DollarSign className="w-5 h-5 text-blue-500" />
+              <IndianRupee className="w-5 h-5 text-blue-500" />
             </div>
             <span className="flex items-center text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
               ↘ +12.5%
             </span>
           </div>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Monthly Fuel Cost</p>
-          <h3 className="text-3xl font-bold text-slate-900">$42,850</h3>
+          <h3 className="text-3xl font-bold text-slate-900">₹42,850</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -123,7 +139,7 @@ const ExpensesFuel = () => {
             </span>
           </div>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Total Expenses</p>
-          <h3 className="text-3xl font-bold text-slate-900">$68,200</h3>
+          <h3 className="text-3xl font-bold text-slate-900">₹68,200</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -158,25 +174,25 @@ const ExpensesFuel = () => {
             <BarChart data={trendData} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-              <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} tickFormatter={(val) => `$${val/1000}k`} />
+              <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} tickFormatter={(val) => `₹${val/1000}k`} />
               <Tooltip 
                 cursor={{fill: '#f8fafc'}}
                 contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
               />
-              <Bar yAxisId="left" dataKey="fuel" fill="#0f172a" radius={[4, 4, 0, 0]} barSize={32} name="Fuel Cost ($)" />
+              <Bar yAxisId="left" dataKey="fuel" fill="#0f172a" radius={[4, 4, 0, 0]} barSize={32} name="Fuel Cost (₹)" />
               
               {/* Fake line overlay to match design */}
-              <Line yAxisId="left" type="monotone" dataKey="general" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', stroke: '#fff', strokeWidth: 2}} name="General Expenses ($)" />
+              <Line yAxisId="left" type="monotone" dataKey="general" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', stroke: '#fff', strokeWidth: 2}} name="General Expenses (₹)" />
             </BarChart>
           </ResponsiveContainer>
         </div>
         
         <div className="flex justify-center items-center gap-6 mt-4 pt-4 border-t border-slate-50">
           <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
-            <div className="w-3 h-3 bg-[#0f172a] rounded"></div> Fuel Cost ($)
+            <div className="w-3 h-3 bg-[#0f172a] rounded"></div> Fuel Cost (₹)
           </div>
           <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
-            <div className="w-3 h-3 rounded-full border-2 border-[#10b981] bg-white"></div> General Expenses ($)
+            <div className="w-3 h-3 rounded-full border-2 border-[#10b981] bg-white"></div> General Expenses (₹)
           </div>
         </div>
       </div>
@@ -207,18 +223,20 @@ const ExpensesFuel = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {logs.map((log) => (
-                <tr key={log.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
-                  <td className="p-4 pl-6 text-slate-400 font-medium text-xs">{log.id}</td>
-                  <td className="p-4 text-slate-600">{log.date}</td>
-                  <td className="p-4 font-semibold text-slate-900">{log.vehicle}</td>
+              {loading ? (
+                <tr><td colSpan="7" className="p-4 text-center text-slate-500">Loading expenses...</td></tr>
+              ) : fuelLogs.map((log) => (
+                <tr key={log._id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+                  <td className="p-4 pl-6 text-slate-400 font-medium text-xs">{log._id.slice(-6)}</td>
+                  <td className="p-4 text-slate-600">{new Date(log.date).toLocaleDateString()}</td>
+                  <td className="p-4 font-semibold text-slate-900">{log.vehicle?.registrationNumber || 'Unknown'}</td>
                   <td className="p-4 text-slate-600 flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-50 text-blue-500 rounded"><DollarSign className="w-3 h-3" /></div>
-                    {log.station}
+                    <div className="p-1.5 bg-blue-50 text-blue-500 rounded"><IndianRupee className="w-3 h-3" /></div>
+                    Fuel
                   </td>
-                  <td className="p-4 text-slate-600">{log.volume}</td>
-                  <td className="p-4 text-slate-500">{log.price}</td>
-                  <td className="p-4 pr-6 font-bold text-slate-900">{log.total}</td>
+                  <td className="p-4 text-slate-600">{log.liters || 0} L</td>
+                  <td className="p-4 text-slate-500">{log.liters ? `₹${(log.cost/log.liters).toFixed(2)}` : '-'}</td>
+                  <td className="p-4 pr-6 font-bold text-slate-900">₹{log.cost.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -264,7 +282,7 @@ const ExpensesFuel = () => {
                     <input type="number" step="0.01" required value={formData.volume} onChange={e => setFormData({...formData, volume: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="450" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Price per L ($)</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Price per L (₹)</label>
                     <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="1.42" />
                   </div>
                 </div>

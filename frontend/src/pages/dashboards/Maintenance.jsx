@@ -1,5 +1,4 @@
-import { useState } from 'react';
-
+import React from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
   Wrench, 
@@ -14,45 +13,59 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const initialVehicles = [
-  { id: 'FL-7729-TX', name: 'Freightliner Cascadia', type: 'Semi-Trailer', nextService: 'Pending Release', servicePercent: 98, lastService: 'Oct 12, 2023', status: 'In Shop', statusColor: 'bg-blue-500 text-white', img: '🚛' },
-  { id: 'TR-8812-CA', name: 'Volvo VNL 860', type: 'Heavy Duty', nextService: 'Dec 15, 2023', servicePercent: 100, lastService: 'Sep 05, 2023', status: '', img: '🚛' },
-  { id: 'VN-4412-NY', name: 'Ford Transit', type: 'Delivery Van', nextService: 'Jan 10, 2024', servicePercent: 72, lastService: 'Nov 20, 2023', status: 'Upcoming', statusColor: 'bg-orange-500 text-white', img: '🚐' },
-  { id: 'FL-1102-GA', name: 'Peterbilt 579', type: 'Semi-Trailer', nextService: 'Mar 01, 2024', servicePercent: 12, lastService: 'Dec 01, 2023', status: 'Good', statusColor: 'bg-emerald-500 text-white', img: '🚛' },
-  { id: 'TR-5523-FL', name: 'Kenworth T680', type: 'Heavy Duty', nextService: 'Feb 28, 2024', servicePercent: 28, lastService: 'Nov 28, 2023', status: '', img: '🚛' },
-  { id: 'VN-9910-IL', name: 'Mercedes Sprinter', type: 'Delivery Van', nextService: 'Mar 05, 2024', servicePercent: 18, lastService: 'Dec 05, 2023', status: '', img: '🚐' },
-];
-
-const history = [
-  { task: 'Full Engine Overhaul', vehicle: 'FL-7729-TX | Freightliner', log: 'Log #2966', time: '2h ago', cost: '$4,250.00' },
-  { task: 'Brake Pad Replacement', vehicle: 'VN-1102-TX | Ford Transit', log: 'Log #2956', time: 'Yesterday', cost: '$320.00' },
-  { task: 'Semi-Annual Inspection', vehicle: 'TR-8812-CA | Volvo VNL', log: 'Log #2984', time: 'Dec 28', cost: '$150.00' },
-  { task: 'Transmission Fluid Flush', vehicle: 'FL-9932-NY | Peterbilt', log: 'Log #2955', time: 'Dec 25', cost: '$890.00' },
-  { task: 'Tire Alignment & Bal', vehicle: 'VN-4412-NY | Ford Transit', log: 'Log #2972', time: 'Dec 22', cost: '$210.00' },
-];
+import { useState, useEffect } from 'react';
 
 const Maintenance = () => {
-  const [vehiclesList, setVehiclesList] = useState(initialVehicles);
+  const [vehicles, setVehicles] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ id: '', name: '', type: 'Heavy Duty', date: '' });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const [vehRes, maintRes] = await Promise.all([
+          fetch('http://localhost:5000/api/vehicles', { headers }),
+          fetch('http://localhost:5000/api/maintenance', { headers })
+        ]);
+        
+        if (vehRes.ok && maintRes.ok) {
+          setVehicles(await vehRes.json());
+          setHistory(await maintRes.json());
+        }
+      } catch (err) {
+        console.error('Failed to fetch data', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const getVehicleImg = (type) => {
+    if (type?.includes('Van')) return '🚐';
+    return '🚛';
+  };
 
   const handleRegister = (e) => {
     e.preventDefault();
     const newVehicle = {
-      ...formData,
-      nextService: formData.date,
-      servicePercent: 0,
-      lastService: 'Just Now',
-      status: 'Upcoming',
-      statusColor: 'bg-orange-500 text-white',
-      img: formData.type === 'Delivery Van' ? '🚐' : '🚛'
+      _id: Date.now().toString(),
+      registrationNumber: formData.id,
+      modelName: formData.name,
+      type: formData.type,
+      status: 'In Shop',
+      odometer: 0
     };
-    setVehiclesList([newVehicle, ...vehiclesList]);
+    setVehicles([newVehicle, ...vehicles]);
     setIsModalOpen(false);
     setFormData({ id: '', name: '', type: 'Heavy Duty', date: '' });
-    toast.success('Service task added successfully');
+    toast.success('Service task added successfully (Mock)');
   };
-
   return (
     <DashboardLayout title="Maintenance & Repairs">
       
@@ -131,41 +144,36 @@ const Maintenance = () => {
 
           {/* Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {vehiclesList.map((v, idx) => (
-              <div key={idx} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow relative">
-                {v.status && (
-                  <div className={`absolute top-3 right-3 px-3 py-1 text-xs font-bold rounded-full shadow-sm z-10 ${v.statusColor}`}>
-                    {v.status}
+            {loading ? <p className="text-slate-500">Loading...</p> : vehicles.map((v) => (
+              <div key={v._id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow relative">
+                {v.status === 'In Shop' && (
+                  <div className={`absolute top-3 right-3 px-3 py-1 text-xs font-bold rounded-full shadow-sm z-10 bg-blue-500 text-white`}>
+                    In Shop
                   </div>
                 )}
                 <div className="h-32 bg-slate-100 flex items-center justify-center text-6xl">
-                  {v.img}
+                  {getVehicleImg(v.type)}
                 </div>
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h4 className="font-bold text-slate-900 text-lg leading-tight">{v.name}</h4>
-                      <p className="text-xs text-slate-500 mt-1 font-medium tracking-wide">{v.id}</p>
+                      <h4 className="font-bold text-slate-900 text-lg leading-tight">{v.modelName}</h4>
+                      <p className="text-xs text-slate-500 mt-1 font-medium tracking-wide">{v.registrationNumber}</p>
                     </div>
                     <button className="text-slate-400 hover:text-slate-600"><MoreVertical className="w-5 h-5" /></button>
                   </div>
                   
                   <div className="mb-4">
                     <div className="flex justify-between text-xs font-semibold mb-2">
-                      <span className="text-slate-500">Next Service: <span className="text-slate-900">{v.nextService}</span></span>
-                      <span className={`${v.servicePercent > 90 ? 'text-red-500' : 'text-slate-900'}`}>{v.servicePercent}%</span>
+                      <span className="text-slate-500">Odometer: <span className="text-slate-900">{v.odometer.toLocaleString()} km</span></span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${v.servicePercent > 90 ? 'bg-red-500' : 'bg-slate-900'}`} style={{ width: `${v.servicePercent}%` }}></div>
+                      <div className={`h-full rounded-full bg-slate-900`} style={{ width: `50%` }}></div>
                     </div>
                   </div>
 
                   <div className="flex justify-between text-xs mb-5">
                     <div>
-                      <p className="text-slate-400 uppercase font-bold tracking-wider mb-1 text-[10px]">LAST SERVICE</p>
-                      <p className="font-semibold text-slate-700">{v.lastService}</p>
-                    </div>
-                    <div className="text-right">
                       <p className="text-slate-400 uppercase font-bold tracking-wider mb-1 text-[10px]">VEHICLE TYPE</p>
                       <p className="font-semibold text-slate-700">{v.type}</p>
                     </div>
@@ -208,7 +216,7 @@ const Maintenance = () => {
                 </div>
                 <div className="space-y-1.5 w-32">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">EST. COST</label>
-                  <input type="text" placeholder="$ 0.00" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900" />
+                  <input type="text" placeholder="₹ 0.00" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900" />
                 </div>
               </div>
 
@@ -246,20 +254,20 @@ const Maintenance = () => {
             </div>
 
             <div className="space-y-5">
-              {history.map((h, i) => (
-                <div key={i} className="flex gap-4">
+              {loading ? <p className="text-xs text-slate-500">Loading history...</p> : history.map((h) => (
+                <div key={h._id} className="flex gap-4">
                   <div className="mt-1">
                     <div className="w-2 h-2 rounded-full bg-slate-300"></div>
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between mb-1">
-                      <p className="font-semibold text-slate-900 text-sm">{h.task}</p>
-                      <span className="text-xs font-medium text-slate-400">{h.time}</span>
+                      <p className="font-semibold text-slate-900 text-sm">{h.description}</p>
+                      <span className="text-xs font-medium text-slate-400">{new Date(h.date).toLocaleDateString()}</span>
                     </div>
-                    <p className="text-xs text-slate-500 mb-1">{h.vehicle}</p>
+                    <p className="text-xs text-slate-500 mb-1">{h.vehicle?.registrationNumber || 'Unknown Vehicle'}</p>
                     <div className="flex justify-between items-end">
-                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{h.log}</span>
-                      <span className="text-sm font-bold text-slate-900">{h.cost}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${h.status === 'Closed' ? 'text-emerald-500 bg-emerald-50' : 'text-orange-500 bg-orange-50'}`}>{h.status}</span>
+                      <span className="text-sm font-bold text-slate-900">₹{h.cost.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>

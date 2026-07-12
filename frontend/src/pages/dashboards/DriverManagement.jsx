@@ -1,5 +1,4 @@
-import { useState } from 'react';
-
+import React from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
   Users, 
@@ -12,39 +11,140 @@ import {
   Plus,
   MoreHorizontal,
   Clock,
-  X
+  X,
+  Edit2,
+  Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const initialDrivers = [
-  { name: 'Marcus Thompson', id: 'TX-8829102', phone: '(555) 123-4567', avatar: 'M', class: 'Class A', expiry: 'Expired', score: 98, status: 'Available', statusColor: 'text-emerald-600 bg-emerald-50 border border-emerald-100' },
-  { name: 'Elena Rodriguez', id: 'CA-1120394', phone: '(555) 987-6543', avatar: 'E', class: 'Class B', expiry: 'Expired', score: 92, status: 'On Trip', statusColor: 'text-blue-600 bg-blue-50 border border-blue-100' },
-  { name: 'James Wilson', id: 'NY-4458291', phone: '(555) 246-8101', avatar: 'J', class: 'Class A', expiry: 'Expired', score: 65, status: 'Off Duty', statusColor: 'text-slate-600 bg-slate-50 border border-slate-200' },
-  { name: 'Sarah Jenkins', id: 'FL-9920182', phone: '(555) 135-7924', avatar: 'S', class: 'Class A', expiry: 'Expired', score: 88, status: 'Suspended', statusColor: 'text-red-600 bg-red-50 border border-red-100' },
-  { name: 'David Chen', id: 'WA-5529103', phone: '(555) 864-2097', avatar: 'D', class: 'Class C', expiry: 'Expired', score: 95, status: 'Available', statusColor: 'text-emerald-600 bg-emerald-50 border border-emerald-100' },
-];
+import { useState, useEffect } from 'react';
 
 const DriverManagement = () => {
-  const [drivers, setDrivers] = useState(initialDrivers);
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', id: '', phone: '', class: 'Class A' });
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({ id: '', name: '', licenseNumber: '', phone: '', class: 'Class A', status: 'Available' });
+
+  const fetchDrivers = async () => {
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/drivers', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setDrivers(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch drivers', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
+
+  const openEditModal = (driver) => {
+    setEditFormData({
+      id: driver._id,
+      name: driver.name || '',
+      licenseNumber: driver.licenseNumber || '',
+      phone: driver.contactNumber || '',
+      class: driver.licenseCategory || 'Class A',
+      status: driver.status || 'Available'
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const updatedDriver = {
+        name: editFormData.name,
+        licenseNumber: editFormData.licenseNumber,
+        contactNumber: editFormData.phone,
+        licenseCategory: editFormData.class,
+        status: editFormData.status
+      };
+
+      const res = await fetch(`http://localhost:5000/api/drivers/${editFormData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedDriver)
+      });
+
+      if (res.ok) {
+        toast.success('Driver updated successfully');
+        setIsEditModalOpen(false);
+        fetchDrivers();
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || 'Failed to update driver');
+      }
+    } catch (err) {
+      toast.error('An error occurred while updating driver');
+    }
+  };
+
+  const handleDelete = async (driver) => {
+    if (driver.status === 'On Trip') {
+      toast.error('Cannot delete driver while they are On Trip');
+      return;
+    }
+    if (!window.confirm('Are you sure you want to delete this driver?')) return;
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/drivers/${driver._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        toast.success('Driver deleted successfully');
+        fetchDrivers();
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || 'Failed to delete driver');
+      }
+    } catch (err) {
+      toast.error('An error occurred while deleting driver');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'Available': return 'text-emerald-600 bg-emerald-50 border border-emerald-100';
+      case 'On Trip': return 'text-blue-600 bg-blue-50 border border-blue-100';
+      case 'Suspended': return 'text-red-600 bg-red-50 border border-red-100';
+      default: return 'text-slate-600 bg-slate-50 border border-slate-200';
+    }
+  };
 
   const handleRegister = (e) => {
     e.preventDefault();
     const newDriver = {
-      ...formData,
-      avatar: formData.name.charAt(0).toUpperCase() || 'D',
-      expiry: 'Valid',
-      score: 100,
-      status: 'Available',
-      statusColor: 'text-emerald-600 bg-emerald-50 border border-emerald-100'
+      _id: Date.now().toString(),
+      name: formData.name,
+      licenseNumber: formData.id,
+      contactNumber: formData.phone,
+      licenseCategory: formData.class,
+      licenseExpiryDate: new Date().toISOString(),
+      safetyScore: 100,
+      status: 'Available'
     };
     setDrivers([newDriver, ...drivers]);
     setIsModalOpen(false);
     setFormData({ name: '', id: '', phone: '', class: 'Class A' });
-    toast.success('Driver registered successfully');
+    toast.success('Driver registered successfully (Mock)');
   };
-
   return (
     <DashboardLayout title="Driver Management">
       
@@ -53,8 +153,8 @@ const DriverManagement = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between h-[140px]">
           <div>
             <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">TOTAL DRIVERS</p>
-            <h3 className="text-3xl font-bold text-slate-900">128</h3>
-            <p className="text-xs text-slate-500 mt-1">+4 from last month</p>
+            <h3 className="text-3xl font-bold text-slate-900">{drivers.length}</h3>
+            <p className="text-xs text-slate-500 mt-1">Total fleet drivers</p>
           </div>
           <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white">
             <Users className="w-6 h-6" />
@@ -63,8 +163,8 @@ const DriverManagement = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between h-[140px]">
           <div>
             <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">AVAILABLE NOW</p>
-            <h3 className="text-3xl font-bold text-slate-900">42</h3>
-            <p className="text-xs text-slate-500 mt-1">32% of total fleet</p>
+            <h3 className="text-3xl font-bold text-slate-900">{drivers.filter(d => d.status === 'Available').length}</h3>
+            <p className="text-xs text-slate-500 mt-1">Ready for dispatch</p>
           </div>
           <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white">
             <UserCheck className="w-6 h-6" />
@@ -73,7 +173,15 @@ const DriverManagement = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between h-[140px]">
           <div>
             <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">COMPLIANCE ALERTS</p>
-            <h3 className="text-3xl font-bold text-slate-900">5</h3>
+            <h3 className="text-3xl font-bold text-slate-900">
+              {drivers.filter(d => {
+                const expiry = new Date(d.licenseExpiryDate);
+                const now = new Date();
+                const diffTime = expiry - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays < 30; // expires in less than 30 days
+              }).length}
+            </h3>
             <p className="text-xs text-slate-500 mt-1">Upcoming license expires</p>
           </div>
           <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white">
@@ -83,7 +191,9 @@ const DriverManagement = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between h-[140px]">
           <div>
             <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">AVERAGE SAFETY</p>
-            <h3 className="text-3xl font-bold text-slate-900">91.4%</h3>
+            <h3 className="text-3xl font-bold text-slate-900">
+              {drivers.length > 0 ? (drivers.reduce((acc, curr) => acc + (curr.safetyScore || 0), 0) / drivers.length).toFixed(1) : 0}%
+            </h3>
             <p className="text-xs text-slate-500 mt-1">Fleet-wide performance</p>
           </div>
           <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white">
@@ -110,7 +220,7 @@ const DriverManagement = () => {
           </div>
           
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <span className="text-sm text-slate-500 mr-2">Showing 5 of 128 active drivers</span>
+            <span className="text-sm text-slate-500 mr-2">Showing {drivers.length} active driver(s)</span>
             <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
               <Download className="w-4 h-4" /> Export CSV
             </button>
@@ -134,44 +244,54 @@ const DriverManagement = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {drivers.map((d, i) => (
-                <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50">
+              {loading ? (
+                <tr><td colSpan="6" className="p-4 text-center text-slate-500">Loading drivers...</td></tr>
+              ) : drivers.map((d, i) => (
+                <tr key={d._id} className="border-b border-slate-50 hover:bg-slate-50/50">
                   <td className="p-4 pl-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">{d.avatar}</div>
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">{d.name ? d.name.charAt(0) : '?'}</div>
                       <div>
-                        <p className="font-semibold text-slate-900">{d.name}</p>
+                        <p className="font-semibold text-slate-900">{d.name || 'Unknown Driver'}</p>
                         <p className="text-xs text-slate-500 flex items-center gap-2">
-                          <span>{d.id}</span> • <span>{d.phone}</span>
+                          <span>{d.licenseNumber}</span> • <span>{d.contactNumber}</span>
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-slate-600 font-medium">{d.class}</td>
+                  <td className="p-4 text-slate-600 font-medium">{d.licenseCategory}</td>
                   <td className="p-4">
-                    <div className="flex items-center gap-2 text-red-500">
-                      <AlertOctagon className="w-4 h-4" />
-                      <span className="font-medium text-xs">{d.expiry}</span>
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <span className="font-medium text-xs">{new Date(d.licenseExpiryDate).toLocaleDateString()}</span>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <span className={`font-bold ${d.score >= 90 ? 'text-emerald-600' : d.score >= 80 ? 'text-emerald-500' : 'text-red-500'}`}>{d.score}</span>
+                      <span className={`font-bold ${d.safetyScore >= 90 ? 'text-emerald-600' : d.safetyScore >= 80 ? 'text-emerald-500' : 'text-red-500'}`}>{d.safetyScore}</span>
                       <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${d.score >= 90 ? 'bg-emerald-500' : d.score >= 80 ? 'bg-emerald-400' : 'bg-red-500'}`} style={{ width: `${d.score}%` }}></div>
+                        <div className={`h-full rounded-full ${d.safetyScore >= 90 ? 'bg-emerald-500' : d.safetyScore >= 80 ? 'bg-emerald-400' : 'bg-red-500'}`} style={{ width: `${d.safetyScore}%` }}></div>
                       </div>
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${d.statusColor}`}>
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(d.status)}`}>
                       <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
                       {d.status}
                     </span>
                   </td>
                   <td className="p-4 pr-6 text-right">
-                    <button className="p-2 text-slate-400 hover:text-slate-600">
-                      <MoreHorizontal className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2 text-slate-400">
+                      <button onClick={() => openEditModal(d)} className="p-1 hover:text-blue-600 transition-colors">
+                        <Edit2 className="w-5 h-5" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(d)} 
+                        className={`p-1 transition-colors ${d.status === 'On Trip' ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 cursor-pointer'}`}
+                        title={d.status === 'On Trip' ? "Cannot delete while on trip" : "Delete Driver"}
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -295,6 +415,56 @@ const DriverManagement = () => {
               <div className="mt-8 flex gap-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
                 <button type="submit" className="flex-1 px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800">Register</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Edit Driver</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
+                  <input type="text" required value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="John Doe" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">License ID</label>
+                  <input type="text" required value={editFormData.licenseNumber} onChange={e => setEditFormData({...editFormData, licenseNumber: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="TX-1234567" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Phone Number</label>
+                  <input type="text" required value={editFormData.phone} onChange={e => setEditFormData({...editFormData, phone: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="(555) 000-0000" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">License Class</label>
+                  <select value={editFormData.class} onChange={e => setEditFormData({...editFormData, class: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <option value="Class A">Class A</option>
+                    <option value="Class B">Class B</option>
+                    <option value="Class C">Class C</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Status</label>
+                  <select value={editFormData.status} onChange={e => setEditFormData({...editFormData, status: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <option value="Available">Available</option>
+                    <option value="On Trip">On Trip</option>
+                    <option value="Suspended">Suspended</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-8 flex gap-3">
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800">Update Driver</button>
               </div>
             </form>
           </div>

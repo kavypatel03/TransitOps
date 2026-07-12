@@ -10,8 +10,9 @@ import {
   Plus,
   Map,
   Wrench,
-  DollarSign
+  IndianRupee
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { 
   LineChart, 
   Line, 
@@ -43,15 +44,49 @@ const fuelData = [
   { month: 'Jun', cost: 5300 },
 ];
 
-const liveTrips = [
-  { id: 'T-8801', vehicle: 'Volvo FH16 (TR-442)', driver: 'Marcus Miller', route: 'Chicago, IL → Detroit, MI', status: 'On Trip', statusColor: 'bg-slate-900 text-white' },
-  { id: 'T-8802', vehicle: 'Freightliner (TR-901)', driver: 'Sarah Jenkins', route: 'Austin, TX → Houston, TX', status: 'Completed', statusColor: 'bg-slate-100 text-slate-700' },
-  { id: 'T-8803', vehicle: 'Kenworth T680 (TR-112)', driver: 'David Chen', route: 'Phoenix, AZ → Las Vegas, NV', status: 'On Trip', statusColor: 'bg-slate-900 text-white' },
-  { id: 'T-8804', vehicle: 'Peterbilt 579 (TR-303)', driver: 'John Doe', route: 'Atlanta, GA → Miami, FL', status: 'Delayed', statusColor: 'bg-red-500 text-white' },
-  { id: 'T-8805', vehicle: 'Mack Anthem (TR-552)', driver: 'Elena Rodriguez', route: 'Seattle, WA → Portland, OR', status: 'Pending', statusColor: 'bg-red-500 text-white' },
-];
+
 
 const Overview = () => {
+  const [data, setData] = useState({ vehicles: [], drivers: [], trips: [] });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const [vehRes, drvRes, trpRes] = await Promise.all([
+          fetch('http://localhost:5000/api/vehicles', { headers }),
+          fetch('http://localhost:5000/api/drivers', { headers }),
+          fetch('http://localhost:5000/api/trips', { headers })
+        ]);
+        
+        if (vehRes.ok && drvRes.ok && trpRes.ok) {
+          setData({
+            vehicles: await vehRes.json(),
+            drivers: await drvRes.json(),
+            trips: await trpRes.json()
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch overview data', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'In Progress': return 'bg-slate-900 text-white';
+      case 'Completed': return 'bg-emerald-500 text-white';
+      case 'Cancelled': return 'bg-red-500 text-white';
+      case 'Scheduled': default: return 'bg-slate-100 text-slate-700';
+    }
+  };
+
   return (
     <DashboardLayout title="Operational Overview">
       
@@ -68,7 +103,7 @@ const Overview = () => {
             </span>
           </div>
           <p className="text-slate-500 text-sm font-medium mb-1">Active Vehicles</p>
-          <h3 className="text-3xl font-bold text-slate-900">142</h3>
+          <h3 className="text-3xl font-bold text-slate-900">{data.vehicles.filter(v => v.status === 'On Trip').length || 0}</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -81,7 +116,7 @@ const Overview = () => {
             </span>
           </div>
           <p className="text-slate-500 text-sm font-medium mb-1">Available Drivers</p>
-          <h3 className="text-3xl font-bold text-slate-900">38</h3>
+          <h3 className="text-3xl font-bold text-slate-900">{data.drivers.filter(d => d.status === 'Available').length || 0}</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -94,7 +129,7 @@ const Overview = () => {
             </span>
           </div>
           <p className="text-slate-500 text-sm font-medium mb-1">Pending Trips</p>
-          <h3 className="text-3xl font-bold text-slate-900">14</h3>
+          <h3 className="text-3xl font-bold text-slate-900">{data.trips.filter(t => t.status === 'Scheduled').length || 0}</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -150,7 +185,7 @@ const Overview = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-900">Monthly Fuel Expenditure</h3>
-            <p className="text-sm text-slate-500">Cost analysis in USD ($)</p>
+            <p className="text-sm text-slate-500">Cost analysis in INR (₹)</p>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -196,19 +231,21 @@ const Overview = () => {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {liveTrips.map((trip) => (
-                  <tr key={trip.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                    <td className="py-4 font-medium text-slate-900">{trip.id}</td>
+                {loading ? (
+                  <tr><td colSpan="4" className="py-4 text-center text-slate-500">Loading trips...</td></tr>
+                ) : data.trips.slice(0, 5).map((trip) => (
+                  <tr key={trip._id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                    <td className="py-4 font-medium text-slate-900">{trip._id.slice(-6)}</td>
                     <td className="py-4">
-                      <p className="font-semibold text-slate-900">{trip.vehicle}</p>
-                      <p className="text-slate-500 text-xs">{trip.driver}</p>
+                      <p className="font-semibold text-slate-900">{trip.vehicle?.modelName || 'N/A'}</p>
+                      <p className="text-slate-500 text-xs">{trip.driver?.name || 'N/A'}</p>
                     </td>
                     <td className="py-4 text-slate-600 flex items-center gap-2">
                       <Map className="w-4 h-4 text-slate-400 shrink-0" />
-                      {trip.route}
+                      {trip.source || 'Unknown'} → {trip.destination || 'Unknown'}
                     </td>
                     <td className="py-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${trip.statusColor}`}>
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(trip.status)}`}>
                         {trip.status}
                       </span>
                     </td>
@@ -289,7 +326,7 @@ const Overview = () => {
                 Generate Report
               </button>
               <button className="w-full flex items-center gap-3 bg-[#27272A] hover:bg-[#3F3F46] p-3 rounded-xl transition-colors text-sm font-medium">
-                <DollarSign className="w-4 h-4 text-slate-400" />
+                <IndianRupee className="w-4 h-4 text-slate-400" />
                 Log Fuel Expense
               </button>
             </div>

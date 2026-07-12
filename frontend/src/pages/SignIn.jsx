@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Lock, Eye, EyeOff, Activity, CheckCircle, ShieldCheck, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -12,7 +12,6 @@ const SignIn = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('Fleet Manager');
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -32,7 +31,7 @@ const SignIn = () => {
       const response = await fetch('http://localhost:5000/userLogin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, rememberMe, role: selectedRole }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
       
       const data = await response.json();
@@ -163,23 +162,7 @@ const SignIn = () => {
               </label>
             </div>
 
-            {/* Role Selector (For Testing) */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider" htmlFor="role">
-                Demo Role Access
-              </label>
-              <select
-                id="role"
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900"
-              >
-                <option value="Fleet Manager">Fleet Manager (Full Access)</option>
-                <option value="Driver">Driver (Limited Access)</option>
-                <option value="Safety Officer">Safety Officer (Compliance)</option>
-                <option value="Financial Analyst">Financial Analyst (Finance)</option>
-              </select>
-            </div>
+
 
             {/* Submit Button */}
             <button
