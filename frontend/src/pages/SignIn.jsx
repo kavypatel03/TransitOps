@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Lock, Eye, EyeOff, Activity, CheckCircle, ShieldCheck, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -12,6 +12,14 @@ const SignIn = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // If user is already logged in, instantly redirect to home
+    const user = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (user) {
+      navigate('/home');
+    }
+  }, [navigate]);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
