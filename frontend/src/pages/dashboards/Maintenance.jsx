@@ -1,4 +1,5 @@
-import React from 'react';
+import { useState } from 'react';
+
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
   Wrench, 
@@ -31,9 +32,9 @@ const history = [
 ];
 
 const Maintenance = () => {
-  const [vehiclesList, setVehiclesList] = React.useState(initialVehicles);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [formData, setFormData] = React.useState({ id: '', name: '', type: 'Heavy Duty', date: '' });
+  const [vehiclesList, setVehiclesList] = useState(initialVehicles);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ id: '', name: '', type: 'Heavy Duty', date: '' });
 
   const handleRegister = (e) => {
     e.preventDefault();

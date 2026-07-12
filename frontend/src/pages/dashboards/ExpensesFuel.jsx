@@ -1,4 +1,5 @@
-import React from 'react';
+import { useState } from 'react';
+
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
   DollarSign, 
@@ -12,7 +13,6 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { 
-  LineChart, 
   Line, 
   BarChart, 
   Bar, 
@@ -41,9 +41,9 @@ const initialLogs = [
 ];
 
 const ExpensesFuel = () => {
-  const [logs, setLogs] = React.useState(initialLogs);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [formData, setFormData] = React.useState({ date: '', vehicle: '', station: '', volume: '', price: '' });
+  const [logs, setLogs] = useState(initialLogs);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ date: '', vehicle: '', station: '', volume: '', price: '' });
 
   const handleRegister = (e) => {
     e.preventDefault();

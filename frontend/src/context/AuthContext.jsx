@@ -1,24 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  // On app load, restore user from localStorage or sessionStorage
-  useEffect(() => {
-    const stored =
-      localStorage.getItem('user') || sessionStorage.getItem('user');
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem('user') || sessionStorage.getItem('user');
     if (stored) {
       try {
-        setUser(JSON.parse(stored));
+        return JSON.parse(stored);
       } catch {
-        // corrupted storage — clear it
         localStorage.removeItem('user');
         sessionStorage.removeItem('user');
+        return null;
       }
     }
-  }, []);
+    return null;
+  });
 
   const login = (userData) => {
     setUser(userData);
@@ -39,4 +36,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

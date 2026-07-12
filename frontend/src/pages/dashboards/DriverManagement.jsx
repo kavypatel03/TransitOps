@@ -1,4 +1,5 @@
-import React from 'react';
+import { useState } from 'react';
+
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
   Users, 
@@ -24,9 +25,9 @@ const initialDrivers = [
 ];
 
 const DriverManagement = () => {
-  const [drivers, setDrivers] = React.useState(initialDrivers);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [formData, setFormData] = React.useState({ name: '', id: '', phone: '', class: 'Class A' });
+  const [drivers, setDrivers] = useState(initialDrivers);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: '', id: '', phone: '', class: 'Class A' });
 
   const handleRegister = (e) => {
     e.preventDefault();

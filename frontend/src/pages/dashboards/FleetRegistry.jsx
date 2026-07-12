@@ -1,4 +1,5 @@
-import React from 'react';
+import { useState } from 'react';
+
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
   Truck, 
@@ -26,9 +27,9 @@ const initialVehicles = [
 ];
 
 const FleetRegistry = () => {
-  const [vehiclesList, setVehiclesList] = React.useState(initialVehicles);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [formData, setFormData] = React.useState({ reg: '', name: '', model: '', type: 'Semi-Trailer', capacity: '', cost: '' });
+  const [vehiclesList, setVehiclesList] = useState(initialVehicles);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ reg: '', name: '', model: '', type: 'Semi-Trailer', capacity: '', cost: '' });
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -141,7 +142,7 @@ const FleetRegistry = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {vehiclesList.map((v, i) => (
+              {vehiclesList.map((v) => (
                 <tr key={v.reg} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                   <td className="p-4 pl-6 font-semibold text-slate-900">{v.reg}</td>
                   <td className="p-4 text-slate-600">{v.name}</td>

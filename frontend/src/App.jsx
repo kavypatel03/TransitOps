@@ -1,9 +1,8 @@
-import React from 'react';
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import DashboardLayout from './components/layout/DashboardLayout';
 
 import SignIn from './pages/SignIn';
 import Registration from './pages/Registration';
@@ -34,37 +33,37 @@ function App() {
           } />
 
           <Route path="/fleet" element={
-            <ProtectedRoute allowedRoles={['fleet_manager', 'financial_analyst']}>
+            <ProtectedRoute allowedRoles={['Fleet Manager', 'Financial Analyst']}>
               <FleetRegistry />
             </ProtectedRoute>
           } />
 
           <Route path="/drivers" element={
-            <ProtectedRoute allowedRoles={['fleet_manager', 'safety_officer']}>
+            <ProtectedRoute allowedRoles={['Fleet Manager', 'Safety Officer']}>
               <DriverManagement />
             </ProtectedRoute>
           } />
 
           <Route path="/trips" element={
-            <ProtectedRoute allowedRoles={['fleet_manager', 'driver']}>
+            <ProtectedRoute allowedRoles={['Fleet Manager', 'Driver']}>
               <TripDispatcher />
             </ProtectedRoute>
           } />
 
           <Route path="/maintenance" element={
-            <ProtectedRoute allowedRoles={['fleet_manager', 'driver', 'safety_officer']}>
+            <ProtectedRoute allowedRoles={['Fleet Manager', 'Driver', 'Safety Officer']}>
               <Maintenance />
             </ProtectedRoute>
           } />
 
           <Route path="/expenses" element={
-            <ProtectedRoute allowedRoles={['fleet_manager', 'financial_analyst']}>
+            <ProtectedRoute allowedRoles={['Fleet Manager', 'Financial Analyst']}>
               <ExpensesFuel />
             </ProtectedRoute>
           } />
 
           <Route path="/reports" element={
-            <ProtectedRoute allowedRoles={['fleet_manager', 'financial_analyst', 'safety_officer']}>
+            <ProtectedRoute allowedRoles={['Fleet Manager', 'Financial Analyst', 'Safety Officer']}>
               <Reports />
             </ProtectedRoute>
           } />
