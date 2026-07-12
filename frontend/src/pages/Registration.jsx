@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, ExternalLink, User, Briefcase, Phone, KeyRound } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Mail, Lock, Eye, EyeOff, User, Briefcase, Phone } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,6 @@ import logoImg from '../assets/logo.png';
 
 const Registration = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -174,10 +173,10 @@ const Registration = () => {
                   required
                 >
                   <option value="" disabled>Select your role</option>
-                  <option value="Fleet Manager">Fleet Manager</option>
-                  <option value="Driver">Driver</option>
-                  <option value="Safety Officer">Safety Officer</option>
-                  <option value="Financial Analyst">Financial Analyst</option>
+                  <option value="fleet_manager">Fleet Manager</option>
+                  <option value="driver">Driver</option>
+                  <option value="safety_officer">Safety Officer</option>
+                  <option value="financial_analyst">Financial Analyst</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
                   <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>

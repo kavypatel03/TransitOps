@@ -1,9 +1,8 @@
-import React from 'react';
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import DashboardLayout from './components/layout/DashboardLayout';
 
 import SignIn from './pages/SignIn';
 import Registration from './pages/Registration';
@@ -28,7 +27,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           
           <Route path="/dashboard" element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['driver', 'financial_analyst']}>
               <Overview />
             </ProtectedRoute>
           } />
@@ -64,7 +63,7 @@ function App() {
           } />
 
           <Route path="/reports" element={
-            <ProtectedRoute allowedRoles={['fleet_manager', 'financial_analyst', 'safety_officer']}>
+            <ProtectedRoute allowedRoles={['financial_analyst', 'safety_officer']}>
               <Reports />
             </ProtectedRoute>
           } />

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -24,7 +24,7 @@ const Home = () => {
       logout();
       toast.success('Logged out successfully');
       navigate('/');
-    } catch (err) {
+    } catch {
       toast.error('Failed to logout');
     }
   };
