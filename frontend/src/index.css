@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply m-0 font-sans min-h-screen flex justify-center items-center overflow-x-hidden text-white;
+    @apply m-0 font-sans min-h-screen flex justify-center items-center overflow-x-hidden text-slate-900;
     background: linear-gradient(135deg, #09090b 0%, #1e1b4b 100%);
   }
   #root {

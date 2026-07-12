@@ -8,9 +8,7 @@ import logoImg from '../assets/logo.png';
 const Registration = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-<<<<<<< HEAD
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-=======
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -46,7 +44,6 @@ const Registration = () => {
       setLoading(false);
     }
   };
->>>>>>> 02ec513fff646d63745bede8854b157f7705f2fc
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-white p-2 sm:p-4 font-sans">
@@ -86,11 +83,7 @@ const Registration = () => {
             </p>
           </div>
 
-<<<<<<< HEAD
-          <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
-=======
-          <form className="space-y-6" onSubmit={handleRegister}>
->>>>>>> 02ec513fff646d63745bede8854b157f7705f2fc
+          <form className="space-y-3" onSubmit={handleRegister}>
             {/* Name Input */}
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700" htmlFor="name">
@@ -104,14 +97,10 @@ const Registration = () => {
                   id="name"
                   type="text"
                   placeholder="John Doe"
-<<<<<<< HEAD
                   className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
-=======
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
->>>>>>> 02ec513fff646d63745bede8854b157f7705f2fc
                 />
               </div>
             </div>
@@ -129,14 +118,10 @@ const Registration = () => {
                   id="email"
                   type="email"
                   placeholder="name@company.com"
-<<<<<<< HEAD
                   className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
-=======
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
->>>>>>> 02ec513fff646d63745bede8854b157f7705f2fc
                 />
               </div>
             </div>
@@ -154,13 +139,9 @@ const Registration = () => {
                   id="phone"
                   type="tel"
                   placeholder="+1 (555) 000-0000"
-<<<<<<< HEAD
                   className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
-=======
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
->>>>>>> 02ec513fff646d63745bede8854b157f7705f2fc
                 />
               </div>
             </div>
@@ -176,15 +157,10 @@ const Registration = () => {
                 </div>
                 <select
                   id="role"
-<<<<<<< HEAD
                   className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors appearance-none"
-                  defaultValue=""
-=======
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors appearance-none"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   required
->>>>>>> 02ec513fff646d63745bede8854b157f7705f2fc
                 >
                   <option value="" disabled>Select your role</option>
                   <option value="Fleet Manager">Fleet Manager</option>
@@ -211,14 +187,10 @@ const Registration = () => {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-<<<<<<< HEAD
                   className="w-full pl-9 pr-12 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors tracking-widest placeholder:tracking-widest"
-=======
-                  className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors tracking-widest placeholder:tracking-widest"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
->>>>>>> 02ec513fff646d63745bede8854b157f7705f2fc
                 />
                 <button
                   type="button"
@@ -249,16 +221,11 @@ const Registration = () => {
             {/* Submit Button */}
             <button
               type="submit"
-<<<<<<< HEAD
-              disabled={!acceptedTerms}
+              disabled={!acceptedTerms || loading}
               className={`w-full font-semibold py-2 px-4 rounded-xl transition-all duration-200 ease-in-out transform shadow-md text-white mt-1 text-xs
-                ${acceptedTerms 
+                ${(acceptedTerms && !loading)
                   ? 'bg-[#141416] hover:bg-black hover:-translate-y-[1px] shadow-slate-900/10 active:translate-y-0 active:shadow-none cursor-pointer' 
-                  : 'bg-slate-300 shadow-none cursor-not-allowed text-slate-500'}`}
-=======
-              disabled={loading}
-              className={`w-full bg-[#141416] hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 ease-in-out transform shadow-lg shadow-slate-900/20 mt-2 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-[1px] active:translate-y-0 active:shadow-none'}`}
->>>>>>> 02ec513fff646d63745bede8854b157f7705f2fc
+                  : 'bg-slate-300 shadow-none cursor-not-allowed text-slate-500 opacity-70'}`}
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
