@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Activity, CheckCircle, ShieldCheck, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import warehouseImg from './assets/warehouse.jpg';
-import logoImg from './assets/logo.png';
+import warehouseImg from '../assets/warehouse.jpg';
+import logoImg from '../assets/logo.png';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -122,9 +122,6 @@ const SignIn = () => {
                 <label className="text-sm font-medium text-slate-700" htmlFor="password">
                   Password
                 </label>
-                <a href="#" className="text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors">
-                  Forgot password?
-                </a>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -181,15 +178,6 @@ const SignIn = () => {
                 Create Account
               </Link>
             </p>
-            <div className="flex items-center gap-4 text-xs text-slate-400">
-              <a href="#" className="flex items-center gap-1 hover:text-slate-600 transition-colors">
-                Privacy Policy <ExternalLink className="h-3 w-3" />
-              </a>
-              <span>•</span>
-              <a href="#" className="flex items-center gap-1 hover:text-slate-600 transition-colors">
-                Terms of Service <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
           </div>
         </div>
       </div>
