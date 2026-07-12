@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const Maintenance = () => {
@@ -23,7 +23,8 @@ const Maintenance = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ id: '', name: '', type: 'Heavy Duty', date: '' });
+  const [formData, setFormData] = useState({ vehicleId: '', date: '' });
+  const [activeFilter, setActiveFilter] = useState('All Vehicles');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,10 +40,9 @@ const Maintenance = () => {
         if (vehRes.ok && maintRes.ok) {
           let fetchedVehicles = await vehRes.json();
           let fetchedHistory = await maintRes.json();
-          
+
           const normalizedRole = (user?.role || '').toLowerCase().replace(/\s+/g, '_');
           if (normalizedRole === 'driver' && fetchedVehicles.length > 0) {
-            // Demo logic: assign the first vehicle to the driver and filter logs
             const assignedVehicle = fetchedVehicles[0];
             fetchedVehicles = [assignedVehicle];
             fetchedHistory = fetchedHistory.filter(h => {
@@ -50,7 +50,7 @@ const Maintenance = () => {
               return hId === assignedVehicle._id;
             });
           }
-          
+
           setVehicles(fetchedVehicles);
           setHistory(fetchedHistory);
         }
@@ -72,255 +72,117 @@ const Maintenance = () => {
 
   const handleRegister = (e) => {
     e.preventDefault();
-    const newVehicle = {
+    const selectedVehicle = vehicles.find(v => v._id === formData.vehicleId);
+    if (!selectedVehicle) {
+      toast.error('Please select a vehicle');
+      return;
+    }
+
+    const newTask = {
       _id: Date.now().toString(),
-      registrationNumber: formData.id,
-      modelName: formData.name,
-      type: formData.type,
-      status: 'In Shop',
-      odometer: 0
+      description: 'Scheduled Service Task',
+      date: formData.date || new Date().toISOString(),
+      status: 'Open',
+      cost: 0,
+      vehicle: selectedVehicle
     };
-    setVehicles([newVehicle, ...vehicles]);
+    
+    setHistory([newTask, ...history]);
     setIsModalOpen(false);
-    setFormData({ id: '', name: '', type: 'Heavy Duty', date: '' });
+    setFormData({ vehicleId: '', date: '' });
     toast.success('Service task added successfully (Mock)');
   };
+
+  const filteredVehicles = useMemo(() => {
+    return vehicles.filter(v => {
+      if (activeFilter === 'All Vehicles') return true;
+      if (activeFilter === 'Urgent') return v.status === 'Maintenance' || v.status === 'Out of Service' || v.status === 'In Shop';
+      if (activeFilter === 'Scheduled') return v.status === 'Available' || v.status === 'On Trip';
+      return true;
+    });
+  }, [vehicles, activeFilter]);
+
   return (
     <DashboardLayout title="Maintenance & Repairs">
       
-      {/* Top Metrics Cards - Hidden for Drivers */}
-      {!isDriver && (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4 h-[140px]">
-          <div className="p-4 bg-blue-50 rounded-2xl">
-            <Wrench className="w-6 h-6 text-blue-500" />
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Vehicles In Shop</p>
-            <div className="flex items-end gap-2">
-              <h3 className="text-3xl font-bold text-slate-900">12</h3>
-              <span className="text-sm font-medium text-slate-400 mb-1">+2 this week</span>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4 h-[140px]">
-          <div className="p-4 bg-slate-50 rounded-2xl">
-            <Clock className="w-6 h-6 text-slate-600" />
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Upcoming Services</p>
-            <div className="flex items-end gap-2">
-              <h3 className="text-3xl font-bold text-slate-900">08</h3>
-              <span className="text-sm font-medium text-slate-400 mb-1">Next 7 days</span>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4 h-[140px]">
-          <div className="p-4 bg-red-50 rounded-2xl">
-            <AlertTriangle className="w-6 h-6 text-red-500" />
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Overdue Maintenance</p>
-            <div className="flex items-end gap-2">
-              <h3 className="text-3xl font-bold text-slate-900">03</h3>
-              <span className="text-sm font-medium text-slate-400 mb-1">-1 resolved</span>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4 h-[140px]">
-          <div className="p-4 bg-emerald-50 rounded-2xl">
-            <ShieldCheck className="w-6 h-6 text-emerald-500" />
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Fleet Health</p>
-            <div className="flex items-end gap-2">
-              <h3 className="text-3xl font-bold text-slate-900">94%</h3>
-              <span className="text-sm font-medium text-slate-400 mb-1">Optimal</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      )}
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        
-        {/* Left Side: Vehicle Grid */}
-        <div className="flex-1">
-          {/* Header/Filters */}
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-            {!isDriver && (
-              <div className="flex bg-slate-100 p-1 rounded-lg">
-                <button className="px-4 py-1.5 text-sm font-bold bg-white text-slate-900 rounded-md shadow-sm">All Vehicles</button>
-                <button className="px-4 py-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900">In Shop</button>
-                <button className="px-4 py-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900">Upcoming</button>
-              </div>
+
+      <div className="w-full">
+        {/* Header/Filters */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <div className="flex bg-slate-100 p-1 rounded-lg">
+            {!isDriver ? (
+              <>
+                <button 
+                  onClick={() => setActiveFilter('All Vehicles')}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeFilter === 'All Vehicles' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}>All Vehicles</button>
+                <button 
+                  onClick={() => setActiveFilter('Urgent')}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeFilter === 'Urgent' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}>Urgent</button>
+                <button 
+                  onClick={() => setActiveFilter('Scheduled')}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeFilter === 'Scheduled' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}>Scheduled</button>
+              </>
+            ) : (
+              <button className="px-4 py-1.5 text-sm font-bold bg-white text-slate-900 rounded-md shadow-sm">Your Vehicle</button>
             )}
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              {!isDriver && (
-                <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
-                  <Filter className="w-4 h-4" /> Filters
-                </button>
-              )}
-              <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800">
-                <Plus className="w-4 h-4" /> Add Service Task
-              </button>
-            </div>
           </div>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
 
-          {/* Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {loading ? <p className="text-slate-500">Loading...</p> : vehicles.map((v) => (
-              <div key={v._id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow relative">
-                {v.status === 'In Shop' && (
-                  <div className={`absolute top-3 right-3 px-3 py-1 text-xs font-bold rounded-full shadow-sm z-10 bg-blue-500 text-white`}>
-                    In Shop
-                  </div>
-                )}
-                <div className="h-32 bg-slate-100 flex items-center justify-center text-6xl">
-                  {getVehicleImg(v.type)}
-                </div>
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h4 className="font-bold text-slate-900 text-lg leading-tight">{v.modelName}</h4>
-                      <p className="text-xs text-slate-500 mt-1 font-medium tracking-wide">{v.registrationNumber}</p>
-                    </div>
-                    <button className="text-slate-400 hover:text-slate-600"><MoreVertical className="w-5 h-5" /></button>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <div className="flex justify-between text-xs font-semibold mb-2">
-                      <span className="text-slate-500">Odometer: <span className="text-slate-900">{v.odometer.toLocaleString()} km</span></span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full bg-slate-900`} style={{ width: `50%` }}></div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between text-xs mb-5">
-                    <div>
-                      <p className="text-slate-400 uppercase font-bold tracking-wider mb-1 text-[10px]">VEHICLE TYPE</p>
-                      <p className="font-semibold text-slate-700">{v.type}</p>
-                    </div>
-                  </div>
-
-                  <button className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-2">
-                    <Wrench className="w-4 h-4" /> Schedule Repair
-                  </button>
-                </div>
-              </div>
-            ))}
+            <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800">
+              <Plus className="w-4 h-4" /> Add Service Task
+            </button>
           </div>
         </div>
 
-        {/* Right Side: Log Form & History */}
-        <div className="w-full lg:w-96 flex flex-col gap-6 shrink-0">
-          
-          {/* Form */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <h3 className="text-lg font-bold text-slate-900 mb-1">Log Maintenance</h3>
-            <p className="text-sm text-slate-500 mb-6">Enter details for recent repairs or services</p>
-            
-            <form className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">SELECT VEHICLE</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Search className="h-4 w-4" />
-                  </div>
-                  <input type="text" placeholder="Q VIN or Plate Number" className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900" />
+        {/* Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {loading ? <p className="text-slate-500">Loading...</p> : filteredVehicles.map((v) => (
+            <div key={v._id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow relative">
+              {v.status === 'In Shop' && (
+                <div className={`absolute top-3 right-3 px-3 py-1 text-xs font-bold rounded-full shadow-sm z-10 bg-blue-500 text-white`}>
+                  In Shop
                 </div>
+              )}
+              <div className="h-32 bg-slate-100 flex items-center justify-center text-6xl">
+                {getVehicleImg(v.type)}
               </div>
-
-              <div className="flex gap-4">
-                <div className="space-y-1.5 flex-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">SERVICE TYPE</label>
-                  <select className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900">
-                    <option></option>
-                  </select>
-                </div>
-                <div className="space-y-1.5 w-32">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">EST. COST</label>
-                  <input type="text" placeholder="₹ 0.00" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">SERVICE CENTER</label>
-                <input type="text" placeholder="Precision Fleet Garage" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900" />
-              </div>
-
-              <div className="flex gap-4 mb-6">
-                <div className="space-y-1.5 flex-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">SERVICE DATE</label>
-                  <input type="text" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900" />
-                </div>
-                <div className="space-y-1.5 flex-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">STATUS</label>
-                  <select className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900">
-                    <option></option>
-                  </select>
-                </div>
-              </div>
-
-              <button type="button" className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
-                Save Entry
-              </button>
-            </form>
-          </div>
-
-          {/* History */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex-1">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-slate-400" /> Service History
-              </h3>
-              <button className="text-xs font-semibold text-slate-500 hover:text-slate-900">View All</button>
-            </div>
-
-            <div className="space-y-5">
-              {loading ? <p className="text-xs text-slate-500">Loading history...</p> : history.map((h) => (
-                <div key={h._id} className="flex gap-4">
-                  <div className="mt-1">
-                    <div className="w-2 h-2 rounded-full bg-slate-300"></div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between mb-1">
-                      <p className="font-semibold text-slate-900 text-sm">{h.description}</p>
-                      <span className="text-xs font-medium text-slate-400">{new Date(h.date).toLocaleDateString()}</span>
-                    </div>
-                    <p className="text-xs text-slate-500 mb-1">{h.vehicle?.registrationNumber || 'Unknown Vehicle'}</p>
-                    <div className="flex justify-between items-end">
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${h.status === 'Closed' ? 'text-emerald-500 bg-emerald-50' : 'text-orange-500 bg-orange-50'}`}>{h.status}</span>
-                      <span className="text-sm font-bold text-slate-900">₹{h.cost.toLocaleString()}</span>
-                    </div>
+              <div className="p-5">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-lg leading-tight">{v.modelName}</h4>
+                    <p className="text-xs text-slate-500 mt-1 font-medium tracking-wide">{v.registrationNumber}</p>
                   </div>
                 </div>
-              ))}
-            </div>
+                
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs font-semibold mb-2">
+                    <span className="text-slate-500">Odometer: <span className="text-slate-900">{(v.odometer || 0).toLocaleString()} km</span></span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full bg-slate-900`} style={{ width: `50%` }}></div>
+                  </div>
+                </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
-              <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" /> All systems verified
-              </span>
-              <button className="text-xs font-semibold text-slate-900">Generate Report</button>
-            </div>
-          </div>
+                <div className="flex justify-between text-xs mb-5">
+                  <div>
+                    <p className="text-slate-400 uppercase font-bold tracking-wider mb-1 text-[10px]">VEHICLE TYPE</p>
+                    <p className="font-semibold text-slate-700">{v.type}</p>
+                  </div>
+                </div>
 
-          {/* Insight Widget */}
-          <div className="bg-[#18181B] rounded-2xl p-6 shadow-sm border border-slate-800 text-white relative overflow-hidden">
-            <Wrench className="absolute -bottom-6 -right-6 w-32 h-32 text-slate-800 opacity-50 -rotate-12" />
-            <div className="relative z-10">
-              <p className="text-[10px] font-bold tracking-wider text-slate-400 mb-2 uppercase">INSIGHT OF THE MONTH</p>
-              <p className="font-bold text-sm leading-relaxed mb-4">
-                Preventive care reduced downtime by 14.2% this quarter.
-              </p>
-              <button className="text-xs font-bold flex items-center gap-1 px-3 py-1.5 bg-[#27272A] hover:bg-[#3F3F46] rounded-lg transition-colors">
-                View Analytics <span className="text-slate-400 ml-1">&gt;</span>
-              </button>
+                <button 
+                  onClick={() => {
+                    setFormData({ vehicleId: v._id, date: '' });
+                    setIsModalOpen(true);
+                  }}
+                  className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <Wrench className="w-4 h-4" /> Schedule Repair
+                </button>
+              </div>
             </div>
-          </div>
-
+          ))}
         </div>
       </div>
 
@@ -337,19 +199,14 @@ const Maintenance = () => {
             <form onSubmit={handleRegister} className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Vehicle ID</label>
-                  <input type="text" required value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="FL-1234-TX" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Vehicle Name</label>
-                  <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="Volvo VNL" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Vehicle Type</label>
-                  <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
-                    <option value="Heavy Duty">Heavy Duty</option>
-                    <option value="Semi-Trailer">Semi-Trailer</option>
-                    <option value="Delivery Van">Delivery Van</option>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Select Vehicle</label>
+                  <select required value={formData.vehicleId} onChange={e => setFormData({...formData, vehicleId: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <option value="">Select a vehicle...</option>
+                    {vehicles.map(v => (
+                      <option key={v._id} value={v._id}>
+                        {v.registrationNumber} - {v.modelName}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>

@@ -16,6 +16,7 @@ import {
   Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 import { useState, useEffect } from 'react';
 
@@ -128,6 +129,24 @@ const DriverManagement = () => {
     }
   };
 
+  const exportToExcel = () => {
+    const exportData = drivers.map(d => ({
+      "Name": d.name || 'Unknown Driver',
+      "License ID": d.licenseNumber,
+      "Contact": d.contactNumber,
+      "License Class": d.licenseCategory,
+      "Expiry Date": new Date(d.licenseExpiryDate).toLocaleDateString(),
+      "Safety Score": d.safetyScore,
+      "Status": d.status
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Drivers");
+    XLSX.writeFile(workbook, "Driver_Management.xlsx");
+    toast.success("Excel exported successfully");
+  };
+
   const handleRegister = (e) => {
     e.preventDefault();
     const newDriver = {
@@ -148,59 +167,7 @@ const DriverManagement = () => {
   return (
     <DashboardLayout title="Driver Management">
       
-      {/* Top Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between h-[140px]">
-          <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">TOTAL DRIVERS</p>
-            <h3 className="text-3xl font-bold text-slate-900">{drivers.length}</h3>
-            <p className="text-xs text-slate-500 mt-1">Total fleet drivers</p>
-          </div>
-          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white">
-            <Users className="w-6 h-6" />
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between h-[140px]">
-          <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">AVAILABLE NOW</p>
-            <h3 className="text-3xl font-bold text-slate-900">{drivers.filter(d => d.status === 'Available').length}</h3>
-            <p className="text-xs text-slate-500 mt-1">Ready for dispatch</p>
-          </div>
-          <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white">
-            <UserCheck className="w-6 h-6" />
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between h-[140px]">
-          <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">COMPLIANCE ALERTS</p>
-            <h3 className="text-3xl font-bold text-slate-900">
-              {drivers.filter(d => {
-                const expiry = new Date(d.licenseExpiryDate);
-                const now = new Date();
-                const diffTime = expiry - now;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays < 30; // expires in less than 30 days
-              }).length}
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">Upcoming license expires</p>
-          </div>
-          <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white">
-            <AlertOctagon className="w-6 h-6" />
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between h-[140px]">
-          <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">AVERAGE SAFETY</p>
-            <h3 className="text-3xl font-bold text-slate-900">
-              {drivers.length > 0 ? (drivers.reduce((acc, curr) => acc + (curr.safetyScore || 0), 0) / drivers.length).toFixed(1) : 0}%
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">Fleet-wide performance</p>
-          </div>
-          <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white">
-            <ShieldAlert className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
+
 
       {/* Main Content Area */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-8">
@@ -221,10 +188,10 @@ const DriverManagement = () => {
           
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <span className="text-sm text-slate-500 mr-2">Showing {drivers.length} active driver(s)</span>
-            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
-              <Download className="w-4 h-4" /> Export CSV
+            <button onClick={exportToExcel} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+              <Download className="w-4 h-4" /> Export Excel
             </button>
-            <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800">
+            <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
               <Plus className="w-4 h-4" /> Register New Driver
             </button>
           </div>
@@ -300,84 +267,7 @@ const DriverManagement = () => {
         </div>
       </div>
 
-      {/* Bottom Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Compliance Tracker */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-emerald-500" /> Compliance Tracker
-          </h3>
-          <p className="text-sm text-slate-500 mb-6">Upcoming safety certifications and renewals.</p>
-          
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl border border-orange-100 bg-orange-50/50 flex justify-between items-center">
-              <div>
-                <p className="font-semibold text-slate-900 text-sm">Annual Medical Check</p>
-                <p className="text-xs text-slate-500">Due in 14 days</p>
-              </div>
-              <span className="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded">Urgent</span>
-            </div>
-            <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50/50 flex justify-between items-center">
-              <div>
-                <p className="font-semibold text-slate-900 text-sm">Hazardous Material Cert</p>
-                <p className="text-xs text-slate-500">Completed 12/2023</p>
-              </div>
-              <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded">Valid</span>
-            </div>
-          </div>
-          <button className="w-full mt-6 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50">View Full Compliance Report</button>
-        </div>
 
-        {/* Availability Heatmap */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-slate-400" /> Availability Heatmap
-          </h3>
-          <p className="text-sm text-slate-500 mb-6">Driver distribution for next 24 hours.</p>
-          
-          <div className="space-y-5">
-            <div>
-              <div className="flex justify-between text-xs font-semibold mb-2">
-                <span className="text-slate-700">Morning (06:00 - 12:00)</span>
-                <span className="text-slate-500">85% Full</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div className="w-[85%] h-full bg-slate-800 rounded-full"></div></div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs font-semibold mb-2">
-                <span className="text-slate-700">Afternoon (12:00 - 18:00)</span>
-                <span className="text-emerald-600">42% Avail</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div className="w-[42%] h-full bg-emerald-500 rounded-full"></div></div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs font-semibold mb-2">
-                <span className="text-slate-700">Night (18:00 - 06:00)</span>
-                <span className="text-slate-400">12% Standby</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div className="w-[12%] h-full bg-slate-300 rounded-full"></div></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Need Assistance? */}
-        <div className="bg-[#18181B] rounded-2xl p-6 shadow-sm border border-slate-800 text-white flex flex-col justify-between">
-          <div>
-            <h3 className="text-lg font-bold mb-3">Need Assistance?</h3>
-            <p className="text-sm text-slate-400 leading-relaxed mb-4">
-              Having trouble verifying a driver's background check?
-            </p>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Our system automatically syncs with national DOT databases twice a day to ensure license validity.
-            </p>
-          </div>
-          <button className="w-full mt-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition-colors">
-            Contact Support
-          </button>
-        </div>
-
-      </div>
 
       {/* Modal */}
       {isModalOpen && (
