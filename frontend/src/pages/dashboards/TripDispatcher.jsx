@@ -271,19 +271,22 @@ const TripDispatcher = () => {
       const headers = { Authorization: `Bearer ${token}` };
       
       const [vehRes, drvRes, tripsRes] = await Promise.all([
-        fetch('http://localhost:5000/api/vehicles', { headers }),
-        fetch('http://localhost:5000/api/drivers', { headers }),
-        fetch('http://localhost:5000/api/trips', { headers })
+        fetch('/api/vehicles', { headers }),
+        fetch('/api/drivers', { headers }),
+        fetch('/api/trips', { headers })
       ]);
       
       if (vehRes.ok && drvRes.ok && tripsRes.ok) {
         const vehData = await vehRes.json();
         const drvData = await drvRes.json();
         const tripsData = await tripsRes.json();
+        const activeTripsList = tripsData.filter(t => t.status !== 'Completed' && t.status !== 'Cancelled');
+        const activeDriverIds = activeTripsList.map(t => t.driver?._id || t.driver);
+
         setVehicles(vehData.filter(v => v.status === 'Available'));
         setMaintenanceVehicles(vehData.filter(v => ['Maintenance', 'In Shop', 'Out of Service'].includes(v.status)));
-        setDrivers(drvData.filter(d => d.status === 'Available'));
-        setActiveTrips(tripsData.filter(t => t.status !== 'Completed' && t.status !== 'Cancelled'));
+        setDrivers(drvData.filter(d => !activeDriverIds.includes(d._id)));
+        setActiveTrips(activeTripsList);
       }
     } catch (err) {
       console.error('Failed to fetch data', err);
@@ -320,7 +323,7 @@ const TripDispatcher = () => {
   const handleUpdateTripStatus = async (tripId, status) => {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
+      const res = await fetch(`/api/trips/${tripId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -412,7 +415,7 @@ System Verified: YES
     setLoading(true);
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/trips', {
+      const res = await fetch('/api/trips', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

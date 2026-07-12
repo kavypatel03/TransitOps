@@ -39,7 +39,7 @@ const DriverManagement = () => {
   const fetchDrivers = async () => {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/drivers', {
+      const res = await fetch('/api/drivers', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -47,7 +47,7 @@ const DriverManagement = () => {
         setDrivers(data);
       }
 
-      const tripsRes = await fetch('http://localhost:5000/api/trips', {
+      const tripsRes = await fetch('/api/trips', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const tripsData = await tripsRes.json();
@@ -89,7 +89,7 @@ const DriverManagement = () => {
         status: editFormData.status
       };
 
-      const res = await fetch(`http://localhost:5000/api/drivers/${editFormData.id}`, {
+      const res = await fetch(`/api/drivers/${editFormData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ const DriverManagement = () => {
     if (!window.confirm('Are you sure you want to delete this driver?')) return;
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/drivers/${driver._id}`, {
+      const res = await fetch(`/api/drivers/${driver._id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

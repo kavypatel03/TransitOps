@@ -7,7 +7,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:5173', // default Vite port
+    origin: process.env.FRONTEND_URL || true, // Allow all or use FRONTEND_URL in production
     credentials: true
 }));
 app.use(express.json());

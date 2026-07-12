@@ -57,9 +57,9 @@ const Overview = () => {
         const headers = { Authorization: `Bearer ${token}` };
         
         const [vehRes, drvRes, trpRes] = await Promise.all([
-          fetch('http://localhost:5000/api/vehicles', { headers }),
-          fetch('http://localhost:5000/api/drivers', { headers }),
-          fetch('http://localhost:5000/api/trips', { headers })
+          fetch('/api/vehicles', { headers }),
+          fetch('/api/drivers', { headers }),
+          fetch('/api/trips', { headers })
         ]);
         
         if (vehRes.ok && drvRes.ok && trpRes.ok) {

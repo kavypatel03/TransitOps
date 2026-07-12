@@ -20,7 +20,7 @@ const Home = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:5000/userLogout', { method: 'POST' });
+      await fetch('/userLogout', { method: 'POST' });
       logout();
       toast.success('Logged out successfully');
       navigate('/');

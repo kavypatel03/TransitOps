@@ -14,34 +14,118 @@ import {
   Users
 } from 'lucide-react';
 
-const reports = [
-  { name: 'Monthly Fleet Utilization', date: 'Jul 01, 2024', type: 'Performance', format: 'PDF, Excel', status: 'Available' },
-  { name: 'Q2 Financial Expenditure', date: 'Jul 01, 2024', type: 'Financial', format: 'PDF, CSV', status: 'Available' },
-  { name: 'Driver Safety Compliance', date: 'Jun 28, 2024', type: 'Safety', format: 'PDF', status: 'Available' },
-  { name: 'Emissions & Carbon Footprint', date: 'Jun 25, 2024', type: 'Environmental', format: 'PDF, Excel', status: 'Available' },
-  { name: 'Maintenance Cost Analysis', date: 'Jun 15, 2024', type: 'Financial', format: 'PDF, CSV', status: 'Available' },
-  { name: 'Weekly Route Optimization', date: 'Jun 14, 2024', type: 'Operations', format: 'Excel', status: 'Available' },
+import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
+
+const REPORTS_LIST = [
+  { id: 'financial_expenditure', name: 'Overall Financial Expenditure', type: 'Financial', desc: 'Comprehensive breakdown of all fleet expenses (Fuel, Tolls, Misc).' },
+  { id: 'maintenance_audit', name: 'Maintenance Cost Audit', type: 'Financial', desc: 'Detailed log of all vehicle repairs and scheduled maintenance costs.' },
+  { id: 'trip_performance', name: 'Fleet Utilization & Trips', type: 'Performance', desc: 'Summary of all dispatched and completed trips with distance and cargo data.' },
 ];
 
 const Reports = () => {
+  const [data, setData] = useState({ expenses: [], maintenance: [], trips: [], vehicles: [] });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const [expRes, maintRes, tripRes, vehRes] = await Promise.all([
+          fetch('/api/expenses', { headers }),
+          fetch('/api/maintenance', { headers }),
+          fetch('/api/trips', { headers }),
+          fetch('/api/vehicles', { headers })
+        ]);
+
+        if (expRes.ok && maintRes.ok && tripRes.ok && vehRes.ok) {
+          setData({
+            expenses: await expRes.json(),
+            maintenance: await maintRes.json(),
+            trips: await tripRes.json(),
+            vehicles: await vehRes.json()
+          });
+        }
+      } catch (err) {
+        toast.error('Failed to load data for reports');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAllData();
+  }, []);
+
+  const handleDownload = (reportId) => {
+    if (loading) {
+       toast.error('Data is still loading, please wait.');
+       return;
+    }
+    
+    let exportData = [];
+    let filename = '';
+
+    if (reportId === 'financial_expenditure') {
+      exportData = data.expenses.map(e => ({
+        'Date': new Date(e.date).toLocaleDateString(),
+        'Expense Type': e.type,
+        'Vehicle Reg': e.vehicle?.registrationNumber || 'Unknown',
+        'Details/Station': e.station || 'N/A',
+        'Cost (₹)': e.cost
+      }));
+      filename = 'Financial_Expenditure_Report.xlsx';
+    } else if (reportId === 'maintenance_audit') {
+      exportData = data.maintenance.map(m => ({
+        'Date': new Date(m.date).toLocaleDateString(),
+        'Vehicle Reg': m.vehicle?.registrationNumber || 'Unknown',
+        'Description': m.description,
+        'Status': m.status,
+        'Cost (₹)': m.cost
+      }));
+      filename = 'Maintenance_Audit_Report.xlsx';
+    } else if (reportId === 'trip_performance') {
+      exportData = data.trips.map(t => ({
+        'Created At': new Date(t.createdAt).toLocaleDateString(),
+        'Source': t.source,
+        'Destination': t.destination,
+        'Vehicle': t.vehicle?.registrationNumber || 'Unknown',
+        'Driver': t.driver?.name || 'Unknown',
+        'Status': t.status,
+        'Distance (km)': t.plannedDistance,
+        'Cargo (kg)': t.cargoWeight
+      }));
+      filename = 'Fleet_Utilization_Report.xlsx';
+    }
+
+    if (exportData.length === 0) {
+      toast.error('No data available for this report.');
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Report_Data");
+    XLSX.writeFile(workbook, filename);
+    toast.success(`Successfully exported ${filename}`);
+  };
+
   return (
     <DashboardLayout title="Reports & Analytics">
       
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-1">Report Center</h2>
-          <p className="text-sm text-slate-500">Generate, view, and schedule automated enterprise reports.</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-1">Financial Data Center</h2>
+          <p className="text-sm text-slate-500">Generate real-time exports of fleet financial and operational metrics.</p>
         </div>
-        <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
-          <FileText className="w-4 h-4" /> Generate Custom Report
-        </button>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         
-        {/* Left Side: Report Categories & Generation */}
-        <div className="xl:col-span-2 space-y-8">
+        {/* Report Categories & Generation */}
+        <div className="space-y-8">
           
           {/* Quick Categories */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -101,16 +185,15 @@ const Reports = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-100">
-                    <th className="p-4 pl-6">Report Name</th>
+                    <th className="p-4 pl-6">Report Category</th>
                     <th className="p-4">Type</th>
-                    <th className="p-4">Generated On</th>
-                    <th className="p-4">Formats</th>
+                    <th className="p-4">Description</th>
                     <th className="p-4 pr-6 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {reports.map((report, idx) => (
-                    <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+                  {REPORTS_LIST.map((report) => (
+                    <tr key={report.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
                       <td className="p-4 pl-6">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-slate-100 text-slate-500 rounded-lg">
@@ -124,11 +207,14 @@ const Reports = () => {
                           {report.type}
                         </span>
                       </td>
-                      <td className="p-4 text-slate-500 font-medium">{report.date}</td>
-                      <td className="p-4 text-slate-400 text-xs">{report.format}</td>
+                      <td className="p-4 text-slate-500 text-xs">{report.desc}</td>
                       <td className="p-4 pr-6 text-right">
-                        <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded hover:bg-slate-50 shadow-sm">
-                          <Download className="w-3.5 h-3.5" /> Download
+                        <button 
+                          onClick={() => handleDownload(report.id)}
+                          disabled={loading}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 shadow-sm transition-colors disabled:opacity-50"
+                        >
+                          <Download className="w-4 h-4" /> Export Excel
                         </button>
                       </td>
                     </tr>
@@ -136,72 +222,6 @@ const Reports = () => {
                 </tbody>
               </table>
             </div>
-            <div className="p-4 border-t border-slate-100 text-center">
-              <button className="text-sm font-semibold text-slate-500 hover:text-slate-900">Load More Reports</button>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Right Side: Automated Schedules */}
-        <div className="w-full flex flex-col gap-6">
-          
-          <div className="bg-[#18181B] rounded-2xl p-6 shadow-sm border border-slate-800 text-white relative overflow-hidden">
-            <PieChart className="absolute -bottom-6 -right-6 w-32 h-32 text-slate-800 opacity-50 -rotate-12" />
-            <div className="relative z-10">
-              <h3 className="text-lg font-bold mb-2">Automated Data Sync</h3>
-              <p className="text-sm text-slate-400 leading-relaxed mb-6">
-                Your enterprise data automatically syncs with your connected BI tools (Tableau, PowerBI) every 24 hours.
-              </p>
-              <div className="flex gap-2">
-                <button className="flex-1 py-2.5 bg-white text-slate-900 text-sm font-bold rounded-lg hover:bg-slate-100 transition-colors text-center">
-                  Sync Now
-                </button>
-                <button className="flex-1 py-2.5 bg-[#27272A] text-white text-sm font-bold rounded-lg hover:bg-[#3F3F46] border border-[#3F3F46] transition-colors text-center">
-                  Settings
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex-1">
-            <h3 className="text-lg font-bold text-slate-900 mb-6">Scheduled Reports</h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-start gap-4 p-4 border border-slate-100 rounded-xl bg-slate-50 hover:border-slate-300 transition-colors cursor-pointer">
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-900 text-sm">Weekly Executive Summary</h4>
-                  <p className="text-xs text-slate-500 mt-1 mb-2">Sent every Monday at 08:00 AM</p>
-                  <div className="flex -space-x-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-300 border-2 border-white"></div>
-                    <div className="w-6 h-6 rounded-full bg-slate-400 border-2 border-white"></div>
-                    <div className="w-6 h-6 rounded-full bg-slate-500 border-2 border-white"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 border border-slate-100 rounded-xl bg-slate-50 hover:border-slate-300 transition-colors cursor-pointer">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-900 text-sm">Monthly Fleet OPEX</h4>
-                  <p className="text-xs text-slate-500 mt-1 mb-2">Sent on the 1st of every month</p>
-                  <div className="flex -space-x-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-800 border-2 border-white"></div>
-                    <div className="w-6 h-6 rounded-full bg-slate-600 border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">+2</div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            <button className="w-full mt-6 py-2 border-2 border-dashed border-slate-200 text-slate-500 text-sm font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 hover:border-slate-300 transition-all">
-              + New Schedule
-            </button>
           </div>
 
         </div>

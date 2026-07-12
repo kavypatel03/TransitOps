@@ -33,7 +33,7 @@ const FleetRegistry = () => {
   const fetchVehicles = async () => {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/vehicles', {
+      const res = await fetch('/api/vehicles', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -74,7 +74,7 @@ const FleetRegistry = () => {
         status: 'Available'
       };
 
-      const res = await fetch('http://localhost:5000/api/vehicles', {
+      const res = await fetch('/api/vehicles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ const FleetRegistry = () => {
     if (!window.confirm('Are you sure you want to delete this vehicle?')) return;
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/vehicles/${vehicle._id}`, {
+      const res = await fetch(`/api/vehicles/${vehicle._id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -134,7 +134,7 @@ const FleetRegistry = () => {
         status: editFormData.status
       };
 
-      const res = await fetch(`http://localhost:5000/api/vehicles/${editFormData.id}`, {
+      const res = await fetch(`/api/vehicles/${editFormData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
