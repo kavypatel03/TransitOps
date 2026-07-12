@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, ExternalLink, User, Briefcase, Phone, KeyRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import warehouseImg from './assets/warehouse.jpg';
-import logoImg from './assets/logo.png';
+import warehouseImg from '../assets/warehouse.jpg';
+import logoImg from '../assets/logo.png';
 
 const Registration = () => {
   const [showPassword, setShowPassword] = useState(false);
