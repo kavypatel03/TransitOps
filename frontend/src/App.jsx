@@ -28,13 +28,13 @@ function App() {
           <Route path="/home" element={<Home />} />
           
           <Route path="/dashboard" element={
-            <ProtectedRoute allowedRoles={['financial_analyst']}>
+            <ProtectedRoute allowedRoles={[]}>
               <Overview />
             </ProtectedRoute>
           } />
 
           <Route path="/fleet" element={
-            <ProtectedRoute allowedRoles={['fleet_manager', 'financial_analyst']}>
+            <ProtectedRoute allowedRoles={['fleet_manager']}>
               <FleetRegistry />
             </ProtectedRoute>
           } />

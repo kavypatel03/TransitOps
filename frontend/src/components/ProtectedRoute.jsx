@@ -31,7 +31,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     if (!allowed) {
       if (normalizedRole === 'fleet_manager') return <Navigate to="/fleet" replace />;
       if (normalizedRole === 'driver') return <Navigate to="/trips" replace />;
-      return <Navigate to="/dashboard" replace />;
+      if (normalizedRole === 'financial_analyst' || normalizedRole === 'financial analyst') return <Navigate to="/expenses" replace />;
+      return <Navigate to="/home" replace />;
     }
   }
 
