@@ -7,124 +7,113 @@ import logoImg from '../assets/logo.png';
 const Registration = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
-      {/* Left Column - Branding & Illustration */}
-      <div className="flex w-1/2 flex-col justify-between bg-slate-900 p-12 text-white">
-        <div className="max-w-2xl mx-auto w-full pt-8 flex flex-col items-center lg:items-start text-center lg:text-left">
+    <div className="flex min-h-screen w-full items-center justify-center bg-white p-2 sm:p-4 font-sans">
+      <div className="flex w-full max-w-5xl flex-col lg:flex-row overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
+        {/* Left Column - Branding & Illustration */}
+        <div className="flex w-full lg:w-1/2 flex-col justify-between bg-slate-900 p-6 lg:p-8 text-white">
+          <div className="max-w-2xl mx-auto w-full pt-4 flex flex-col items-center lg:items-start text-center lg:text-left">
 
-          <div className="w-full relative rounded-2xl overflow-hidden bg-slate-800 p-2 shadow-2xl border border-slate-700/50 mb-10">
-            <img 
-              src={warehouseImg} 
-              alt="Logistics Dashboard Illustration" 
-              className="w-full h-auto rounded-xl object-cover"
-            />
-          </div>
+            <div className="w-full relative rounded-xl overflow-hidden mb-8 max-h-48 lg:max-h-60">
+              <img 
+                src={warehouseImg} 
+                alt="Logistics Dashboard Illustration" 
+                className="w-full h-auto object-cover"
+              />
+            </div>
 
-          <h1 className="text-4xl lg:text-5xl font-bold leading-tight mb-6">
-            Intelligent Transport<br />Operations at Scale.
-          </h1>
-          
-          <p className="text-slate-400 text-lg max-w-sm">
-            The next-generation platform for fleet management, real-time logistics tracking, and enterprise resource optimization.
-          </p>
-        </div>
-
-        <div className="max-w-2xl mx-auto w-full flex justify-between items-center text-sm text-slate-500 mt-12">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4" />
-            <span>ISO 27001 Certified</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4" />
-            <span>99.9% Uptime SLA</span>
+            <h1 className="text-3xl lg:text-4xl font-bold leading-tight mb-4">
+              Intelligent Transport<br />Operations at Scale.
+            </h1>
+            
+            <p className="text-slate-400 text-sm max-w-md">
+              The next-generation platform for fleet management, real-time logistics tracking, and enterprise resource optimization.
+            </p>
           </div>
         </div>
-      </div>
 
       {/* Right Column - Registration Form */}
-      <div className="w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white">
-        <div className="w-full max-w-2xl">
-          <div className="mb-8 flex items-center justify-center">
-            <img src={logoImg} alt="TransitOps Logo" className="h-12 w-auto" />
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-white p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-xl">
+          <div className="mb-4 flex items-center justify-center">
+            <img src={logoImg} alt="TransitOps Logo" className="h-8 w-auto" />
           </div>
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">Create Account</h2>
-            <p className="text-slate-500 text-sm">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-slate-900 mb-1">Create Account</h2>
+            <p className="text-slate-500 text-xs">
               Register for the TransitOps portal to manage operations.
             </p>
           </div>
 
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
             {/* Name Input */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700" htmlFor="name">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700" htmlFor="name">
                 Full Name
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <User className="h-5 w-5" />
+                  <User className="h-4 w-4" />
                 </div>
                 <input
                   id="name"
                   type="text"
                   placeholder="John Doe"
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
                 />
               </div>
             </div>
 
             {/* Email Input */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700" htmlFor="email">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700" htmlFor="email">
                 Enterprise Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Mail className="h-5 w-5" />
+                  <Mail className="h-4 w-4" />
                 </div>
                 <input
                   id="email"
                   type="email"
                   placeholder="name@company.com"
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
                 />
               </div>
             </div>
 
             {/* Phone Number Input */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700" htmlFor="phone">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700" htmlFor="phone">
                 Contact Number
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Phone className="h-5 w-5" />
+                  <Phone className="h-4 w-4" />
                 </div>
                 <input
                   id="phone"
                   type="tel"
                   placeholder="+1 (555) 000-0000"
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
                 />
               </div>
             </div>
 
-
-
             {/* Role Select */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700" htmlFor="role">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700" htmlFor="role">
                 Account Role
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Briefcase className="h-5 w-5" />
+                  <Briefcase className="h-4 w-4" />
                 </div>
                 <select
                   id="role"
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors appearance-none"
+                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors appearance-none"
                   defaultValue=""
                 >
                   <option value="" disabled>Select your role</option>
@@ -140,26 +129,26 @@ const Registration = () => {
             </div>
 
             {/* Password Input */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700" htmlFor="password">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700" htmlFor="password">
                 Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="h-5 w-5" />
+                  <Lock className="h-4 w-4" />
                 </div>
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors tracking-widest placeholder:tracking-widest"
+                  className="w-full pl-9 pr-12 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors tracking-widest placeholder:tracking-widest"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -167,13 +156,15 @@ const Registration = () => {
 
 
             {/* Terms Checkbox */}
-            <div className="flex items-start pt-2">
+            <div className="flex items-start pt-1">
               <input
                 id="terms"
                 type="checkbox"
-                className="h-4 w-4 mt-0.5 text-slate-900 focus:ring-slate-900 border-slate-300 rounded cursor-pointer accent-slate-900"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="h-3.5 w-3.5 mt-0.5 text-slate-900 focus:ring-slate-900 border-slate-300 rounded cursor-pointer accent-slate-900"
               />
-              <label htmlFor="terms" className="ml-2 block text-sm text-slate-600 cursor-pointer">
+              <label htmlFor="terms" className="ml-2 block text-xs text-slate-600 cursor-pointer">
                 I agree to the <a href="#" className="font-semibold text-slate-900 hover:underline">Terms of Service</a> and <a href="#" className="font-semibold text-slate-900 hover:underline">Privacy Policy</a>
               </label>
             </div>
@@ -181,15 +172,19 @@ const Registration = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-[#141416] hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 ease-in-out transform hover:-translate-y-[1px] shadow-lg shadow-slate-900/20 active:translate-y-0 active:shadow-none mt-2"
+              disabled={!acceptedTerms}
+              className={`w-full font-semibold py-2 px-4 rounded-xl transition-all duration-200 ease-in-out transform shadow-md text-white mt-1 text-xs
+                ${acceptedTerms 
+                  ? 'bg-[#141416] hover:bg-black hover:-translate-y-[1px] shadow-slate-900/10 active:translate-y-0 active:shadow-none cursor-pointer' 
+                  : 'bg-slate-300 shadow-none cursor-not-allowed text-slate-500'}`}
             >
               Create Account
             </button>
           </form>
 
           {/* Footer Links */}
-          <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col items-center gap-4">
-            <p className="text-sm text-slate-500">
+          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col items-center gap-2">
+            <p className="text-xs text-slate-500">
               Already have an account?{' '}
               <Link to="/" className="font-semibold text-slate-900 hover:underline">
                 Sign In
@@ -198,6 +193,7 @@ const Registration = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
