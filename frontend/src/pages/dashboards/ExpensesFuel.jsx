@@ -125,16 +125,16 @@ const ExpensesFuel = () => {
     <DashboardLayout title="Fuel & Expenses">
       
       {/* Header Actions */}
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 mb-1">Financial Overview</h2>
           <p className="text-sm text-slate-500">Track fleet costs, fuel logs and operational efficiency.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={handleExport} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <button onClick={handleExport} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
             <Download className="w-4 h-4" /> Export Report
           </button>
-          <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
+          <button onClick={() => setIsModalOpen(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
             <Plus className="w-4 h-4" /> Add Expense
           </button>
         </div>

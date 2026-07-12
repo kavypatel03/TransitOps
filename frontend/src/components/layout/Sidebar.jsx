@@ -9,7 +9,8 @@ import {
   IndianRupee, 
   BarChart3, 
   Settings, 
-  LogOut 
+  LogOut,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import logoImg from '../../assets/logo.png';
@@ -29,7 +30,7 @@ export const NAV_ITEMS = [
   { name: 'Settings', path: '/settings', icon: Settings, roles: ['fleet_manager'] },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -43,13 +44,37 @@ const Sidebar = () => {
   );
 
   return (
-    <div className="w-64 bg-[#0F172A] min-h-screen text-slate-400 flex flex-col justify-between">
-      <div>
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden transition-opacity"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Content */}
+      <div 
+        className={cn(
+          "fixed lg:relative inset-y-0 left-0 z-50 w-64 bg-[#0F172A] min-h-screen text-slate-400 flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0",
+          isOpen ? "translate-x-0 lg:ml-0" : "-translate-x-full lg:-ml-64"
+        )}
+      >
+        <div>
         {/* Logo Section */}
-        <div className="h-16 flex items-center px-6 mt-4 mb-4">
+        <div className="h-16 flex items-center justify-between px-6 mt-4 mb-4">
           <div className="flex items-center gap-3 bg-white p-1.5 rounded-lg">
             <img src={logoImg} alt="TransitOps Logo" className="h-6 w-auto" />
           </div>
+          {isOpen && (
+            <button 
+              onClick={() => setIsOpen(false)}
+              className="p-2 text-slate-400 hover:text-slate-200 rounded-lg hover:bg-[#1E293B] transition-colors"
+              title="Close Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
@@ -58,6 +83,7 @@ const Sidebar = () => {
             <NavLink
               key={item.name}
               to={item.path}
+              onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors",
@@ -85,6 +111,7 @@ const Sidebar = () => {
         </button>
       </div>
     </div>
+    </>
   );
 };
 

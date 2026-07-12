@@ -28,12 +28,12 @@ const Reports = () => {
     <DashboardLayout title="Reports & Analytics">
       
       {/* Header Actions */}
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 mb-1">Report Center</h2>
           <p className="text-sm text-slate-500">Generate, view, and schedule automated enterprise reports.</p>
         </div>
-        <button className="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
+        <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
           <FileText className="w-4 h-4" /> Generate Custom Report
         </button>
       </div>
@@ -80,18 +80,18 @@ const Reports = () => {
 
           {/* Generated Reports List */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
-            <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between md:items-center gap-4">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <FileSearch className="w-5 h-5 text-slate-400" /> Recent Reports
               </h3>
-              <div className="flex gap-2">
-                <div className="relative">
+              <div className="flex gap-2 w-full md:w-auto">
+                <div className="relative flex-1 md:flex-none">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                     <Calendar className="h-4 w-4" />
                   </div>
-                  <input type="text" defaultValue="Last 30 Days" className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:border-slate-300 cursor-pointer" readOnly />
+                  <input type="text" defaultValue="Last 30 Days" className="pl-9 pr-4 py-2 w-full bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:border-slate-300 cursor-pointer" readOnly />
                 </div>
-                <button className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
+                <button className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
                   <Filter className="w-4 h-4" /> Filter
                 </button>
               </div>

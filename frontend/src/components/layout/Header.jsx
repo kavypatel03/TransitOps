@@ -1,13 +1,23 @@
 
-import { Search, Bell } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const Header = ({ title = "Dashboard" }) => {
+const Header = ({ title = "Dashboard", onMenuClick, isSidebarOpen }) => {
   const { user } = useAuth();
 
   return (
-    <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8">
-      <h1 className="text-xl font-semibold text-slate-800">{title}</h1>
+    <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8">
+      <div className="flex items-center gap-4">
+        {!isSidebarOpen && (
+          <button 
+            onClick={onMenuClick}
+            className="p-2 -ml-2 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        )}
+        <h1 className="text-xl font-semibold text-slate-800">{title}</h1>
+      </div>
 
       <div className="flex items-center gap-6">
         {/* Search Bar */}
@@ -22,14 +32,7 @@ const Header = ({ title = "Dashboard" }) => {
           />
         </div>
 
-        {/* Notifications */}
-        <button className="relative text-slate-500 hover:text-slate-700 transition-colors">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-          </span>
-        </button>
+
 
         {/* User Profile */}
         <div className="flex items-center gap-3 border-l border-slate-200 pl-6">
