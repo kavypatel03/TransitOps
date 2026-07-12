@@ -1,148 +1,205 @@
 import React, { useState } from 'react';
+import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, ExternalLink, User, Briefcase, Phone, KeyRound } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import warehouseImg from './assets/warehouse.jpg';
+import logoImg from './assets/logo.png';
 
-const roles = [
-  { id: 'fleet-manager', title: 'Fleet Manager', description: 'Oversees fleet assets, maintenance, and operational efficiency.', icon: '🏢' },
-  { id: 'driver', title: 'Driver', description: 'Creates trips, assigns vehicles and drivers, and monitors active deliveries.', icon: '🚚' },
-  { id: 'safety-officer', title: 'Safety Officer', description: 'Ensures driver compliance, tracks license validity, and monitors safety scores.', icon: '🛡️' },
-  { id: 'financial-analyst', title: 'Financial Analyst', description: 'Reviews operational expenses, fuel consumption, and profitability.', icon: '📈' },
-];
-
-export default function Registration() {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: ''
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleRoleSelect = (roleId) => {
-    setFormData(prev => ({ ...prev, role: roleId }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Registration Data:', formData);
-    alert(`Registered successfully as ${formData.role || 'User'}!`);
-  };
+const Registration = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <div className="relative w-full min-h-screen flex justify-center items-center p-8 box-border overflow-hidden">
-      {/* Background animated shapes */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-        <div className="absolute rounded-full blur-[80px] -top-[10%] -left-[10%] w-[40vw] h-[40vw] bg-[rgba(108,92,231,0.4)] animate-float-1"></div>
-        <div className="absolute rounded-full blur-[80px] -bottom-[10%] -right-[5%] w-[35vw] h-[35vw] bg-[rgba(253,121,168,0.3)] animate-float-2"></div>
-        <div className="absolute rounded-full blur-[80px] top-[40%] left-[60%] w-[25vw] h-[25vw] bg-[rgba(0,206,201,0.3)] animate-float-3"></div>
-      </div>
-      
-      {/* Glassmorphism Card */}
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-3xl p-12 w-full max-w-[800px] z-10 opacity-0 translate-y-5 animate-slide-up">
-        
-        <div className="text-center mb-10 flex flex-col items-center">
-          <img src="/logo.png" alt="TransitOps Logo" className="w-24 h-24 mb-4 object-contain" />
-          <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-white to-[#a29bfe] bg-clip-text text-transparent">
-            TransitOps Registration
-          </h2>
-          <p className="text-white/70 text-lg m-0">Join the Smart Transport Operations Platform</p>
+    <div className="flex min-h-screen bg-slate-50 font-sans">
+      {/* Left Column - Branding & Illustration */}
+      <div className="flex w-1/2 flex-col justify-between bg-slate-900 p-12 text-white">
+        <div className="max-w-2xl mx-auto w-full pt-8 flex flex-col items-center lg:items-start text-center lg:text-left">
+
+          <div className="w-full relative rounded-2xl overflow-hidden bg-slate-800 p-2 shadow-2xl border border-slate-700/50 mb-10">
+            <img 
+              src={warehouseImg} 
+              alt="Logistics Dashboard Illustration" 
+              className="w-full h-auto rounded-xl object-cover"
+            />
+          </div>
+
+          <h1 className="text-4xl lg:text-5xl font-bold leading-tight mb-6">
+            Intelligent Transport<br />Operations at Scale.
+          </h1>
+          
+          <p className="text-slate-400 text-lg max-w-sm">
+            The next-generation platform for fleet management, real-time logistics tracking, and enterprise resource optimization.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="fullName" className="text-sm font-medium text-white/90 ml-1">Full Name</label>
-            <input 
-              type="text" 
-              id="fullName" 
-              name="fullName" 
-              value={formData.fullName} 
-              onChange={handleChange} 
-              placeholder="Enter your full name"
-              className="bg-black/20 border border-white/10 rounded-xl p-4 text-white text-base font-sans transition-all duration-300 placeholder:text-white/30 focus:outline-none focus:border-secondary focus:bg-black/30 focus:ring-4 focus:ring-primary/20"
-              required 
-            />
+        <div className="max-w-2xl mx-auto w-full flex justify-between items-center text-sm text-slate-500 mt-12">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4" />
+            <span>ISO 27001 Certified</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4" />
+            <span>99.9% Uptime SLA</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column - Registration Form */}
+      <div className="w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white">
+        <div className="w-full max-w-2xl">
+          <div className="mb-8 flex items-center justify-center">
+            <img src={logoImg} alt="TransitOps Logo" className="h-12 w-auto" />
+          </div>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">Create Account</h2>
+            <p className="text-slate-500 text-sm">
+              Register for the TransitOps portal to manage operations.
+            </p>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="email" className="text-sm font-medium text-white/90 ml-1">Email Address</label>
-            <input 
-              type="email" 
-              id="email" 
-              name="email" 
-              value={formData.email} 
-              onChange={handleChange} 
-              placeholder="name@company.com"
-              className="bg-black/20 border border-white/10 rounded-xl p-4 text-white text-base font-sans transition-all duration-300 placeholder:text-white/30 focus:outline-none focus:border-secondary focus:bg-black/30 focus:ring-4 focus:ring-primary/20"
-              required 
-            />
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex flex-col gap-2 flex-1">
-              <label htmlFor="password" className="text-sm font-medium text-white/90 ml-1">Password</label>
-              <input 
-                type="password" 
-                id="password" 
-                name="password" 
-                value={formData.password} 
-                onChange={handleChange} 
-                placeholder="••••••••"
-                className="bg-black/20 border border-white/10 rounded-xl p-4 text-white text-base font-sans transition-all duration-300 placeholder:text-white/30 focus:outline-none focus:border-secondary focus:bg-black/30 focus:ring-4 focus:ring-primary/20"
-                required 
-              />
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              <label htmlFor="confirmPassword" className="text-sm font-medium text-white/90 ml-1">Confirm Password</label>
-              <input 
-                type="password" 
-                id="confirmPassword" 
-                name="confirmPassword" 
-                value={formData.confirmPassword} 
-                onChange={handleChange} 
-                placeholder="••••••••"
-                className="bg-black/20 border border-white/10 rounded-xl p-4 text-white text-base font-sans transition-all duration-300 placeholder:text-white/30 focus:outline-none focus:border-secondary focus:bg-black/30 focus:ring-4 focus:ring-primary/20"
-                required 
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-white/90 ml-1">Select Your Role</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              {roles.map(role => (
-                <div 
-                  key={role.id}
-                  onClick={() => handleRoleSelect(role.id)}
-                  className={`relative overflow-hidden rounded-2xl p-6 cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] border ${
-                    formData.role === role.id 
-                      ? 'bg-primary/20 border-primary shadow-[0_8px_24px_rgba(108,92,231,0.2)]' 
-                      : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.08] hover:-translate-y-1 hover:border-white/20'
-                  }`}
-                >
-                  {formData.role === role.id && (
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(108,92,231,0.4)_0%,transparent_70%)] pointer-events-none"></div>
-                  )}
-                  <div className="text-3xl mb-4">{role.icon}</div>
-                  <h3 className="text-lg text-white m-0 mb-2 font-semibold">{role.title}</h3>
-                  <p className="text-sm text-white/60 m-0 leading-relaxed">{role.description}</p>
+          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            {/* Name Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700" htmlFor="name">
+                Full Name
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <User className="h-5 w-5" />
                 </div>
-              ))}
+                <input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                />
+              </div>
             </div>
-          </div>
 
-          <button 
-            type="submit" 
-            disabled={!formData.role}
-            className="group relative overflow-hidden bg-gradient-to-br from-primary to-accent text-white border-none rounded-xl p-5 text-lg font-semibold cursor-pointer mt-6 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_10px_20px_rgba(108,92,231,0.3)] active:not-disabled:translate-y-[1px]"
-          >
-            Create Account
-            <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-gradient-to-r from-transparent via-white/20 to-transparent rotate-45 opacity-0 group-hover:not-disabled:opacity-100 group-hover:not-disabled:animate-shimmer transition-opacity duration-500 pointer-events-none"></div>
-          </button>
-        </form>
+            {/* Email Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700" htmlFor="email">
+                Enterprise Email
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="name@company.com"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Phone Number Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700" htmlFor="phone">
+                Contact Number
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Phone className="h-5 w-5" />
+                </div>
+                <input
+                  id="phone"
+                  type="tel"
+                  placeholder="+1 (555) 000-0000"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                />
+              </div>
+            </div>
+
+
+
+            {/* Role Select */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700" htmlFor="role">
+                Account Role
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Briefcase className="h-5 w-5" />
+                </div>
+                <select
+                  id="role"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors appearance-none"
+                  defaultValue=""
+                >
+                  <option value="" disabled>Select your role</option>
+                  <option value="fleet_manager">Fleet Manager</option>
+                  <option value="driver">Driver</option>
+                  <option value="safety_officer">Safety Officer</option>
+                  <option value="financial_analyst">Financial Analyst</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Password Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700" htmlFor="password">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors tracking-widest placeholder:tracking-widest"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+
+
+
+            {/* Terms Checkbox */}
+            <div className="flex items-start pt-2">
+              <input
+                id="terms"
+                type="checkbox"
+                className="h-4 w-4 mt-0.5 text-slate-900 focus:ring-slate-900 border-slate-300 rounded cursor-pointer accent-slate-900"
+              />
+              <label htmlFor="terms" className="ml-2 block text-sm text-slate-600 cursor-pointer">
+                I agree to the <a href="#" className="font-semibold text-slate-900 hover:underline">Terms of Service</a> and <a href="#" className="font-semibold text-slate-900 hover:underline">Privacy Policy</a>
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="w-full bg-[#141416] hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 ease-in-out transform hover:-translate-y-[1px] shadow-lg shadow-slate-900/20 active:translate-y-0 active:shadow-none mt-2"
+            >
+              Create Account
+            </button>
+          </form>
+
+          {/* Footer Links */}
+          <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col items-center gap-4">
+            <p className="text-sm text-slate-500">
+              Already have an account?{' '}
+              <Link to="/" className="font-semibold text-slate-900 hover:underline">
+                Sign In
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default Registration;
