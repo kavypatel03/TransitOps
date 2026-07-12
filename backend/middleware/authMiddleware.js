@@ -5,25 +5,33 @@ const User = require('../models/User');
 const protect = async (req, res, next) => {
     let token;
 
+    // Check for JWT token in headers
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
-            // Get token from header (Bearer <token>)
             token = req.headers.authorization.split(' ')[1];
-
-            // Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-            // Get user from the token payload and attach to request
             req.user = await User.findById(decoded.id).select('-password');
-
-            next();
+            return next(); // Proceed if JWT is valid
         } catch (error) {
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            return res.status(401).json({ message: 'Not authorized, token failed' });
         }
     }
 
-    if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' });
+    // Check for Session
+    if (req.session && req.session.userId) {
+        try {
+            req.user = await User.findById(req.session.userId).select('-password');
+            if (req.user) {
+                return next(); // Proceed if session is valid
+            }
+        } catch (error) {
+            return res.status(401).json({ message: 'Not authorized, session failed' });
+        }
+    }
+
+    // If neither JWT nor Session worked
+    if (!token && (!req.session || !req.session.userId)) {
+        return res.status(401).json({ message: 'Not authorized, no token or session' });
     }
 };
 
