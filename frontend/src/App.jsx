@@ -1,11 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 
 import SignIn from './pages/SignIn';
 import Registration from './pages/Registration';
+import Home from './home';
 import Overview from './pages/dashboards/Overview';
 import FleetRegistry from './pages/dashboards/FleetRegistry';
 import DriverManagement from './pages/dashboards/DriverManagement';
@@ -19,9 +21,11 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <Toaster position="top-right" />
         <Routes>
           <Route path="/" element={<SignIn />} />
           <Route path="/register" element={<Registration />} />
+          <Route path="/home" element={<Home />} />
           
           <Route path="/dashboard" element={
             <ProtectedRoute>

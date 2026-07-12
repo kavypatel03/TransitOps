@@ -12,4 +12,9 @@ router.post('/userRegister', authController.register);
 // @access  Public
 router.post('/userLogin', authController.login);
 
+// @route   POST /userLogout
+// @desc    Logout user & destroy session
+// @access  Public
+router.post('/userLogout', authController.logout);
+
 module.exports = router;

@@ -8,18 +8,25 @@ const generateToken = (id) => {
 };
 
 const registerUser = async (userData) => {
-    const { name, email, password, role } = userData;
+    const { name, email, password, role, phone } = userData;
 
-    // Check if user exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-        throw new Error('User already exists');
+    // Check if email exists
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
+        throw new Error('Email is already registered');
+    }
+
+    // Check if phone exists
+    const phoneExists = await User.findOne({ phone });
+    if (phoneExists) {
+        throw new Error('Phone number is already registered');
     }
 
     // Create user
     const user = await User.create({
         name,
         email,
+        phone,
         password,
         role
     });
@@ -28,6 +35,7 @@ const registerUser = async (userData) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         token: generateToken(user._id)
     };
@@ -51,6 +59,7 @@ const loginUser = async (email, password) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         token: generateToken(user._id)
     };
