@@ -8,7 +8,6 @@ import logoImg from '../assets/logo.png';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('fleet_manager');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -48,9 +47,9 @@ const SignIn = () => {
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('user', JSON.stringify(data));
       }
-      toast.success('Successfully logged in!');
       
-      login(selectedRole);
+      login(data);
+      toast.success('Successfully logged in!');
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.message);

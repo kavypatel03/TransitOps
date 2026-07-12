@@ -5,13 +5,35 @@ import { useAuth } from '../context/AuthContext';
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useAuth();
 
-  if (!user) {
+  // Fallback: also check storage directly (handles page refresh race condition)
+  const storedUser = (() => {
+    try {
+      const raw = localStorage.getItem('user') || sessionStorage.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const currentUser = user || storedUser;
+
+  if (!currentUser) {
     return <Navigate to="/" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect to default dashboard if role not allowed
-    return <Navigate to="/dashboard" replace />;
+  if (allowedRoles && allowedRoles.length > 0) {
+    // Normalize role: "Fleet Manager" -> "fleet_manager" for comparison
+    const normalizedRole = (currentUser.role || '')
+      .toLowerCase()
+      .replace(/\s+/g, '_');
+
+    const allowed = allowedRoles.some(
+      (r) => r.toLowerCase() === normalizedRole
+    );
+
+    if (!allowed) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return children;

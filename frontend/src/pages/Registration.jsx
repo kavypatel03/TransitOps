@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, ExternalLink, User, Briefcase, Phone, KeyRound } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 import warehouseImg from '../assets/warehouse.jpg';
 import logoImg from '../assets/logo.png';
 
@@ -16,6 +17,7 @@ const Registration = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   useEffect(() => {
     // If user is already logged in, instantly redirect to home
@@ -44,8 +46,9 @@ const Registration = () => {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data));
+      login(data);
       toast.success('Account created successfully!');
-      navigate('/home');
+      navigate('/dashboard');
     } catch (err) {
       toast.error(err.message);
     } finally {
