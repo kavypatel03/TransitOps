@@ -1,5 +1,5 @@
 
-import { Search, Bell, Menu } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Header = ({ title = "Dashboard", onMenuClick, isSidebarOpen }) => {
@@ -32,14 +32,7 @@ const Header = ({ title = "Dashboard", onMenuClick, isSidebarOpen }) => {
           />
         </div>
 
-        {/* Notifications */}
-        <button className="relative text-slate-500 hover:text-slate-700 transition-colors">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-          </span>
-        </button>
+
 
         {/* User Profile */}
         <div className="flex items-center gap-3 border-l border-slate-200 pl-6">

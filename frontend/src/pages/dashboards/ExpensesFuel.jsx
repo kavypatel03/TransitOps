@@ -12,54 +12,75 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { 
-  LineChart, 
-  Line, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
-} from 'recharts';
-
-const trendData = [
-  { month: 'Jan', fuel: 32000, general: 15000 },
-  { month: 'Feb', fuel: 34000, general: 16000 },
-  { month: 'Mar', fuel: 30000, general: 14000 },
-  { month: 'Apr', fuel: 38000, general: 21000 },
-  { month: 'May', fuel: 41000, general: 19000 },
-  { month: 'Jun', fuel: 39000, general: 22000 },
-];
+import * as XLSX from 'xlsx';
 
 const ExpensesFuel = () => {
   const [expenses, setExpenses] = useState([]);
+  const [trips, setTrips] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ date: '', vehicle: '', station: '', volume: '', price: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
-    const fetchExpenses = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/expenses', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setExpenses(data);
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const [expRes, tripsRes, vehRes] = await Promise.all([
+          fetch('http://localhost:5000/api/expenses', { headers }),
+          fetch('http://localhost:5000/api/trips', { headers }),
+          fetch('http://localhost:5000/api/vehicles', { headers })
+        ]);
+        
+        if (expRes.ok && tripsRes.ok && vehRes.ok) {
+          setExpenses(await expRes.json());
+          setTrips(await tripsRes.json());
+          setVehicles(await vehRes.json());
+        } else if (expRes.ok) {
+          setExpenses(await expRes.json());
         }
       } catch (err) {
-        console.error('Failed to fetch expenses', err);
+        console.error('Failed to fetch data', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchExpenses();
+    fetchData();
   }, []);
 
+  const totalExpenses = expenses.reduce((sum, e) => sum + e.cost, 0);
+  
+  const monthlyFuelCost = expenses.reduce((sum, e) => {
+    const d = new Date(e.date);
+    const isThisMonth = d.getMonth() === new Date().getMonth() && d.getFullYear() === new Date().getFullYear();
+    return (e.type === 'Fuel' && isThisMonth) ? sum + e.cost : sum;
+  }, 0);
+  
+  const totalFuelVolume = expenses.reduce((sum, e) => (e.type === 'Fuel' ? sum + (e.liters || 0) : sum), 0);
+  const totalDistance = trips.reduce((sum, t) => sum + (t.plannedDistance || 0), 0);
+  
+  const averageMileage = totalFuelVolume > 0 ? (totalDistance / totalFuelVolume).toFixed(1) : '0.0';
+  const fuelEfficiency = averageMileage > 12 ? 'Optimal' : (averageMileage > 8 ? 'Average' : 'Poor');
+  const grade = averageMileage > 12 ? 'Grade A' : (averageMileage > 8 ? 'Grade B' : 'Grade C');
+
   const fuelLogs = expenses.filter(e => e.type === 'Fuel');
+
+  const totalRecords = fuelLogs.length;
+  const totalPages = Math.ceil(totalRecords / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentLogs = fuelLogs.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage(p => p + 1);
+  };
+  
+  const handlePrev = () => {
+    if (currentPage > 1) setCurrentPage(p => p - 1);
+  };
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -82,6 +103,24 @@ const ExpensesFuel = () => {
     toast.success('Expense added successfully');
   };
 
+  const handleExport = () => {
+    const exportData = fuelLogs.map(log => ({
+      'Ref ID': log._id.slice(-6),
+      'Date': new Date(log.date).toLocaleDateString(),
+      'Vehicle': log.vehicle?.registrationNumber || 'Unknown',
+      'Gas Station': log.station || 'Unknown',
+      'Volume (L)': log.liters || 0,
+      'Total Cost (₹)': log.cost
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Fuel_Expenses");
+    
+    XLSX.writeFile(workbook, "TransitOps_Fuel_Report.xlsx");
+    toast.success('Report exported to Excel!');
+  };
+
   return (
     <DashboardLayout title="Fuel & Expenses">
       
@@ -92,7 +131,7 @@ const ExpensesFuel = () => {
           <p className="text-sm text-slate-500">Track fleet costs, fuel logs and operational efficiency.</p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+          <button onClick={handleExport} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
             <Download className="w-4 h-4" /> Export Report
           </button>
           <button onClick={() => setIsModalOpen(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
@@ -108,12 +147,12 @@ const ExpensesFuel = () => {
             <div className="p-3 bg-blue-50 rounded-xl">
               <IndianRupee className="w-5 h-5 text-blue-500" />
             </div>
-            <span className="flex items-center text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
-              ↘ +12.5%
+            <span className="flex items-center text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">
+              Current Month
             </span>
           </div>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Monthly Fuel Cost</p>
-          <h3 className="text-3xl font-bold text-slate-900">₹42,850</h3>
+          <h3 className="text-3xl font-bold text-slate-900">₹{monthlyFuelCost.toLocaleString()}</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -121,12 +160,12 @@ const ExpensesFuel = () => {
             <div className="p-3 bg-emerald-50 rounded-xl">
               <TrendingUp className="w-5 h-5 text-emerald-500" />
             </div>
-            <span className="flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
-              ↗ +2.1%
+            <span className="flex items-center text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">
+              Overall
             </span>
           </div>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Average Mileage</p>
-          <h3 className="text-3xl font-bold text-slate-900">14.2 km/L</h3>
+          <h3 className="text-3xl font-bold text-slate-900">{averageMileage} km/L</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -134,12 +173,12 @@ const ExpensesFuel = () => {
             <div className="p-3 bg-orange-50 rounded-xl">
               <Wallet className="w-5 h-5 text-orange-500" />
             </div>
-            <span className="flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
-              ↗ -4.3%
+            <span className="flex items-center text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">
+              All Time
             </span>
           </div>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Total Expenses</p>
-          <h3 className="text-3xl font-bold text-slate-900">₹68,200</h3>
+          <h3 className="text-3xl font-bold text-slate-900">₹{totalExpenses.toLocaleString()}</h3>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center h-[140px]">
@@ -147,69 +186,18 @@ const ExpensesFuel = () => {
             <div className="p-3 bg-cyan-50 rounded-xl">
               <Leaf className="w-5 h-5 text-cyan-500" />
             </div>
-            <span className="flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
-              ↗ Grade A
+            <span className="flex items-center text-xs font-bold text-cyan-700 bg-cyan-100 px-2 py-1 rounded">
+              {grade}
             </span>
           </div>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Fuel Efficiency</p>
-          <h3 className="text-3xl font-bold text-slate-900">Optimal</h3>
-        </div>
-      </div>
-
-      {/* Chart Section */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-8">
-        <div className="flex justify-between items-start mb-8">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Expenditure & Consumption Trends</h3>
-            <p className="text-sm text-slate-500">Comparison of fuel spend vs volume over the last 6 months</p>
-          </div>
-          <div className="flex items-center text-xs font-semibold">
-            <button className="px-3 py-1.5 text-slate-900 bg-slate-100 rounded-l-lg border-r border-slate-200">Last 6 Months</button>
-            <button className="px-3 py-1.5 text-slate-500 hover:bg-slate-50 rounded-r-lg border border-transparent">Yearly</button>
-          </div>
-        </div>
-
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={trendData} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-              <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} tickFormatter={(val) => `₹${val/1000}k`} />
-              <Tooltip 
-                cursor={{fill: '#f8fafc'}}
-                contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-              />
-              <Bar yAxisId="left" dataKey="fuel" fill="#0f172a" radius={[4, 4, 0, 0]} barSize={32} name="Fuel Cost (₹)" />
-              
-              {/* Fake line overlay to match design */}
-              <Line yAxisId="left" type="monotone" dataKey="general" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', stroke: '#fff', strokeWidth: 2}} name="General Expenses (₹)" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        
-        <div className="flex justify-center items-center gap-6 mt-4 pt-4 border-t border-slate-50">
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
-            <div className="w-3 h-3 bg-[#0f172a] rounded"></div> Fuel Cost (₹)
-          </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
-            <div className="w-3 h-3 rounded-full border-2 border-[#10b981] bg-white"></div> General Expenses (₹)
-          </div>
+          <h3 className="text-3xl font-bold text-slate-900">{fuelEfficiency}</h3>
         </div>
       </div>
 
       {/* Table Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
-        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-slate-50/50 rounded-t-2xl">
-          <div className="flex gap-2 w-full sm:w-auto">
-            <button className="flex-1 sm:flex-none px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-lg text-sm font-bold text-slate-900">Fuel Logs</button>
-            <button className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-900">General Expenses</button>
-          </div>
-          <button className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 bg-white px-3 py-1.5 border border-slate-200 rounded-lg">
-            <Filter className="w-4 h-4" /> Filter by vehicle...
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-8">
+        <div className="overflow-x-auto rounded-t-2xl">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 text-slate-500 text-xs font-semibold uppercase tracking-wider">
@@ -225,7 +213,7 @@ const ExpensesFuel = () => {
             <tbody className="text-sm">
               {loading ? (
                 <tr><td colSpan="7" className="p-4 text-center text-slate-500">Loading expenses...</td></tr>
-              ) : fuelLogs.map((log) => (
+              ) : currentLogs.map((log) => (
                 <tr key={log._id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
                   <td className="p-4 pl-6 text-slate-400 font-medium text-xs">{log._id.slice(-6)}</td>
                   <td className="p-4 text-slate-600">{new Date(log.date).toLocaleDateString()}</td>
@@ -244,10 +232,10 @@ const ExpensesFuel = () => {
         </div>
 
         <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500">
-          <div>Showing 5 of 142 records</div>
+          <div>Showing {totalRecords === 0 ? 0 : startIndex + 1} to {Math.min(startIndex + itemsPerPage, totalRecords)} of {totalRecords} records</div>
           <div className="flex gap-2">
-            <button className="px-3 py-1 bg-white border border-slate-200 rounded hover:bg-slate-50 text-slate-400">Previous</button>
-            <button className="px-3 py-1 bg-white border border-slate-200 rounded hover:bg-slate-50 font-medium text-slate-900">Next</button>
+            <button onClick={handlePrev} disabled={currentPage === 1} className="px-3 py-1 bg-white border border-slate-200 rounded hover:bg-slate-50 text-slate-600 disabled:opacity-50">Previous</button>
+            <button onClick={handleNext} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-white border border-slate-200 rounded hover:bg-slate-50 font-medium text-slate-900 disabled:opacity-50">Next</button>
           </div>
         </div>
       </div>
@@ -270,7 +258,14 @@ const ExpensesFuel = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Vehicle</label>
-                  <input type="text" required value={formData.vehicle} onChange={e => setFormData({...formData, vehicle: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="VOL-FH16-01" />
+                  <select required value={formData.vehicle} onChange={e => setFormData({...formData, vehicle: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white">
+                    <option value="" disabled>Select a vehicle</option>
+                    {vehicles.map(v => (
+                      <option key={v._id} value={v.registrationNumber}>
+                        {v.registrationNumber} - {v.modelName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Gas Station</label>

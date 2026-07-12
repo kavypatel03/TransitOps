@@ -1,9 +1,83 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
-  MapPin, Calendar, Clock, Map, ShieldCheck, Navigation, CalendarCheck, AlertOctagon, Truck, User, Box, CheckCircle
+  MapPin, Calendar, Clock, Map, ShieldCheck, Navigation, CalendarCheck, AlertOctagon, Truck, User, Box, CheckCircle, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix leaflet default icon issue in react
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const HUB_COORDINATES = {
+  'Delhi Hub': [28.6139, 77.2090],
+  'Mumbai Hub': [19.0760, 72.8777],
+  'Bangalore Hub': [12.9716, 77.5946],
+  'Chennai Hub': [13.0827, 80.2707],
+  'Kolkata Hub': [22.5726, 88.3639],
+  'Hyderabad Hub': [17.3850, 78.4867]
+};
+
+const LiveTrackingMap = ({ source, destination }) => {
+  const startCoord = HUB_COORDINATES[source] || [28.6139, 77.2090];
+  const endCoord = HUB_COORDINATES[destination] || [19.0760, 72.8777];
+  
+  const [currentPos, setCurrentPos] = useState(startCoord);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    setCurrentPos(startCoord);
+    setProgress(0);
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        const next = prev + 0.01;
+        if (next >= 1) {
+          clearInterval(interval);
+          return 1;
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [source, destination]);
+
+  useEffect(() => {
+    const lat = startCoord[0] + (endCoord[0] - startCoord[0]) * progress;
+    const lng = startCoord[1] + (endCoord[1] - startCoord[1]) * progress;
+    setCurrentPos([lat, lng]);
+  }, [progress, startCoord, endCoord]);
+
+  const truckIcon = new L.Icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/664/664468.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+
+  return (
+    <MapContainer 
+      center={[(startCoord[0] + endCoord[0]) / 2, (startCoord[1] + endCoord[1]) / 2]} 
+      zoom={5} 
+      style={{ height: '100%', width: '100%', zIndex: 10 }}
+    >
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; OpenStreetMap contributors'
+      />
+      <Polyline positions={[startCoord, endCoord]} color="#0f172a" weight={4} dashArray="10, 10" />
+      <Marker position={startCoord} />
+      <Marker position={endCoord} />
+      <Marker position={currentPos} icon={truckIcon} />
+    </MapContainer>
+  );
+};
 
 const INDIAN_HUBS = [
   'Delhi Hub',
@@ -33,8 +107,11 @@ const TripDispatcher = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [vehicles, setVehicles] = useState([]);
+  const [maintenanceVehicles, setMaintenanceVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [activeTrips, setActiveTrips] = useState([]);
+  const [trackingTrip, setTrackingTrip] = useState(null);
+  const [driverUpdates, setDriverUpdates] = useState([]);
   
   const [tripData, setTripData] = useState({
     source: 'Delhi Hub',
@@ -69,6 +146,7 @@ const TripDispatcher = () => {
         const drvData = await drvRes.json();
         const tripsData = await tripsRes.json();
         setVehicles(vehData.filter(v => v.status === 'Available'));
+        setMaintenanceVehicles(vehData.filter(v => ['Maintenance', 'In Shop', 'Out of Service'].includes(v.status)));
         setDrivers(drvData.filter(d => d.status === 'Available'));
         setActiveTrips(tripsData.filter(t => t.status !== 'Completed' && t.status !== 'Cancelled'));
       }
@@ -80,6 +158,29 @@ const TripDispatcher = () => {
   useEffect(() => {
     fetchAllData();
   }, []);
+
+  useEffect(() => {
+    if (!trackingTrip) return;
+    const msgs = [
+      'Driver departed origin hub.',
+      'Navigating highway corridor.',
+      'Passed regional toll gate.',
+      'Traffic moderate, ETA stable.',
+      'Nearing mid-way checkpoint.',
+      'Refueling at partner station.',
+      'Approaching destination zone.'
+    ];
+    let i = 0;
+    
+    setDriverUpdates([msgs[0] + ` [${new Date().toLocaleTimeString()}]`]);
+    i++;
+    
+    const interval = setInterval(() => {
+      setDriverUpdates(prev => [msgs[i % msgs.length] + ` [${new Date().toLocaleTimeString()}]`, ...prev]);
+      i++;
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [trackingTrip]);
 
   const handleUpdateTripStatus = async (tripId, status) => {
     try {
@@ -582,7 +683,15 @@ System Verified: YES
                           {t.status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 flex items-center justify-end gap-2">
+                        {t.status !== 'Draft' && (
+                          <button
+                            onClick={() => { setTrackingTrip(t); setDriverUpdates([]); }}
+                            className="px-3 py-2 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-1"
+                          >
+                            <Map className="w-3 h-3" /> Track
+                          </button>
+                        )}
                         {t.status === 'Draft' ? (
                           <button 
                             onClick={() => handleUpdateTripStatus(t._id, 'Dispatched')}
@@ -606,6 +715,115 @@ System Verified: YES
             </table>
           </div>
         </div>
+
+        {/* Maintenance Vehicles Section */}
+        <div className="mt-8 bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="mb-6 flex justify-between items-center">
+            <h3 className="text-xl font-bold text-slate-900">Vehicles Under Maintenance</h3>
+            <span className="px-3 py-1 bg-red-100 text-red-700 font-bold text-xs rounded-full">{maintenanceVehicles.length} Vehicles</span>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Registration</th>
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Model</th>
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Status</th>
+                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {maintenanceVehicles.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="py-8 text-center text-slate-500 font-medium">No vehicles currently under maintenance.</td>
+                  </tr>
+                ) : (
+                  maintenanceVehicles.map(v => (
+                    <tr key={v._id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-slate-900">{v.registrationNumber}</td>
+                      <td className="py-3 px-4 text-sm text-slate-700">{v.modelName}</td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                          {v.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-slate-500 text-right font-medium">
+                        Cannot be assigned
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Tracking Modal */}
+        {trackingTrip && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl w-full max-w-5xl h-[80vh] flex flex-col overflow-hidden shadow-2xl">
+              
+              {/* Modal Header */}
+              <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <Navigation className="w-5 h-5 text-emerald-600" />
+                    Live Tracking: #{trackingTrip._id.slice(-6).toUpperCase()}
+                  </h3>
+                  <p className="text-sm text-slate-500 font-medium">
+                    {trackingTrip.source} &rarr; {trackingTrip.destination}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setTrackingTrip(null)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                {/* Map Area */}
+                <div className="flex-1 bg-slate-200 relative z-0">
+                  <LiveTrackingMap source={trackingTrip.source} destination={trackingTrip.destination} />
+                </div>
+
+                {/* Driver Live Updates Panel */}
+                <div className="w-full md:w-80 bg-white border-l border-slate-100 flex flex-col">
+                  <div className="p-4 border-b border-slate-100 bg-slate-50">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{trackingTrip.driver?.name || 'Unknown Driver'}</p>
+                        <p className="text-xs text-slate-500">{trackingTrip.vehicle?.registrationNumber || 'Unknown Vehicle'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Live Updates</h4>
+                    {driverUpdates.map((update, idx) => (
+                      <div key={idx} className="flex gap-3">
+                        <div className="mt-1 flex flex-col items-center">
+                          <div className={`w-2.5 h-2.5 rounded-full ${idx === 0 ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                          {idx !== driverUpdates.length - 1 && <div className="w-px h-full bg-slate-200 mt-1"></div>}
+                        </div>
+                        <p className={`text-sm ${idx === 0 ? 'text-slate-900 font-semibold' : 'text-slate-500'}`}>
+                          {update}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
 
       </div>
 
