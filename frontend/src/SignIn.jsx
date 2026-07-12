@@ -1,16 +1,49 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Activity, CheckCircle, ShieldCheck, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import warehouseImg from './assets/warehouse.jpg';
 import logoImg from './assets/logo.png';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignIn = (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
-    navigate('/home');
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:5000/userLogin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
+      
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to sign in');
+      }
+
+      if (rememberMe) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data));
+      } else {
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data));
+      }
+      toast.success('Successfully logged in!');
+      navigate('/home');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -76,6 +109,9 @@ const SignIn = () => {
                   type="email"
                   placeholder="name@company.com"
                   className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -99,6 +135,9 @@ const SignIn = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors tracking-widest placeholder:tracking-widest"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
                 <button
                   type="button"
@@ -115,6 +154,8 @@ const SignIn = () => {
               <input
                 id="remember-me"
                 type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 text-slate-900 focus:ring-slate-900 border-slate-300 rounded cursor-pointer accent-slate-900"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-600 cursor-pointer">
@@ -125,9 +166,10 @@ const SignIn = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-[#141416] hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 ease-in-out transform hover:-translate-y-[1px] shadow-lg shadow-slate-900/20 active:translate-y-0 active:shadow-none"
+              disabled={loading}
+              className={`w-full bg-[#141416] hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 ease-in-out transform shadow-lg shadow-slate-900/20 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-[1px] active:translate-y-0 active:shadow-none'}`}
             >
-              Sign In to Dashboard
+              {loading ? 'Signing In...' : 'Sign In to Dashboard'}
             </button>
           </form>
 

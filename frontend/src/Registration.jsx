@@ -1,12 +1,48 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, ExternalLink, User, Briefcase, Phone, KeyRound } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import warehouseImg from './assets/warehouse.jpg';
 import logoImg from './assets/logo.png';
 
 const Registration = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [role, setRole] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:5000/userRegister', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role, phone }),
+      });
+      
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to register');
+      }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data));
+      toast.success('Account created successfully!');
+      navigate('/home');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans">
@@ -56,7 +92,7 @@ const Registration = () => {
             </p>
           </div>
 
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-6" onSubmit={handleRegister}>
             {/* Name Input */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700" htmlFor="name">
@@ -71,6 +107,9 @@ const Registration = () => {
                   type="text"
                   placeholder="John Doe"
                   className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -89,6 +128,9 @@ const Registration = () => {
                   type="email"
                   placeholder="name@company.com"
                   className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -107,6 +149,8 @@ const Registration = () => {
                   type="tel"
                   placeholder="+1 (555) 000-0000"
                   className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                 />
               </div>
             </div>
@@ -125,13 +169,15 @@ const Registration = () => {
                 <select
                   id="role"
                   className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors appearance-none"
-                  defaultValue=""
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  required
                 >
                   <option value="" disabled>Select your role</option>
-                  <option value="fleet_manager">Fleet Manager</option>
-                  <option value="driver">Driver</option>
-                  <option value="safety_officer">Safety Officer</option>
-                  <option value="financial_analyst">Financial Analyst</option>
+                  <option value="Fleet Manager">Fleet Manager</option>
+                  <option value="Driver">Driver</option>
+                  <option value="Safety Officer">Safety Officer</option>
+                  <option value="Financial Analyst">Financial Analyst</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
                   <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -153,6 +199,9 @@ const Registration = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors tracking-widest placeholder:tracking-widest"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
                 <button
                   type="button"
@@ -181,9 +230,10 @@ const Registration = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-[#141416] hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 ease-in-out transform hover:-translate-y-[1px] shadow-lg shadow-slate-900/20 active:translate-y-0 active:shadow-none mt-2"
+              disabled={loading}
+              className={`w-full bg-[#141416] hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 ease-in-out transform shadow-lg shadow-slate-900/20 mt-2 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-[1px] active:translate-y-0 active:shadow-none'}`}
             >
-              Create Account
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
