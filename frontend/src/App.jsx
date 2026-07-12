@@ -7,7 +7,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 
 import SignIn from './pages/SignIn';
 import Registration from './pages/Registration';
-import Home from './home';
+import Home from './pages/Home';
 import Overview from './pages/dashboards/Overview';
 import FleetRegistry from './pages/dashboards/FleetRegistry';
 import DriverManagement from './pages/dashboards/DriverManagement';

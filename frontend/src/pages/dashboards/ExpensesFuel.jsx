@@ -7,8 +7,10 @@ import {
   Leaf, 
   Download,
   Plus,
-  Filter
+  Filter,
+  X
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { 
   LineChart, 
   Line, 
@@ -30,7 +32,7 @@ const trendData = [
   { month: 'Jun', fuel: 39000, general: 22000 },
 ];
 
-const fuelLogs = [
+const initialLogs = [
   { id: 'FL-9021', date: '2024-06-12', vehicle: 'VOL-FH16-01', station: 'Shell Express A4', volume: '450 L', price: '$1.42', total: '$639.00' },
   { id: 'FL-9022', date: '2024-06-12', vehicle: 'MB-ACT-45', station: 'BP Logistics Hub', volume: '380 L', price: '$1.39', total: '$528.20' },
   { id: 'FL-9023', date: '2024-06-11', vehicle: 'SCA-R500-12', station: 'Circle K Depot', volume: '520 L', price: '$1.45', total: '$754.00' },
@@ -39,6 +41,31 @@ const fuelLogs = [
 ];
 
 const ExpensesFuel = () => {
+  const [logs, setLogs] = React.useState(initialLogs);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [formData, setFormData] = React.useState({ date: '', vehicle: '', station: '', volume: '', price: '' });
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    const volNum = parseFloat(formData.volume) || 0;
+    const priceNum = parseFloat(formData.price) || 0;
+    
+    const newLog = {
+      id: `FL-${Math.floor(1000 + Math.random() * 9000)}`,
+      date: formData.date,
+      vehicle: formData.vehicle,
+      station: formData.station,
+      volume: `${volNum} L`,
+      price: `$${priceNum.toFixed(2)}`,
+      total: `$${(volNum * priceNum).toFixed(2)}`
+    };
+    
+    setLogs([newLog, ...logs]);
+    setIsModalOpen(false);
+    setFormData({ date: '', vehicle: '', station: '', volume: '', price: '' });
+    toast.success('Expense added successfully');
+  };
+
   return (
     <DashboardLayout title="Fuel & Expenses">
       
@@ -52,7 +79,7 @@ const ExpensesFuel = () => {
           <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
             <Download className="w-4 h-4" /> Export Report
           </button>
-          <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
+          <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
             <Plus className="w-4 h-4" /> Add Expense
           </button>
         </div>
@@ -180,7 +207,7 @@ const ExpensesFuel = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {fuelLogs.map((log) => (
+              {logs.map((log) => (
                 <tr key={log.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
                   <td className="p-4 pl-6 text-slate-400 font-medium text-xs">{log.id}</td>
                   <td className="p-4 text-slate-600">{log.date}</td>
@@ -206,6 +233,50 @@ const ExpensesFuel = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Record Fuel Expense</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleRegister} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Date</label>
+                  <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Vehicle</label>
+                  <input type="text" required value={formData.vehicle} onChange={e => setFormData({...formData, vehicle: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="VOL-FH16-01" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Gas Station</label>
+                  <input type="text" required value={formData.station} onChange={e => setFormData({...formData, station: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="Shell Express" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Volume (L)</label>
+                    <input type="number" step="0.01" required value={formData.volume} onChange={e => setFormData({...formData, volume: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="450" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Price per L ($)</label>
+                    <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="1.42" />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-8 flex gap-3">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800">Save Expense</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </DashboardLayout>
   );

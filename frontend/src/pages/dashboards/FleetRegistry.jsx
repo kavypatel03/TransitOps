@@ -12,10 +12,12 @@ import {
   Edit2,
   Trash2,
   MoreHorizontal,
-  Search
+  Search,
+  X
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
-const vehicles = [
+const initialVehicles = [
   { reg: 'ABC-1234', name: 'Volvo FH16', model: '2023 Heavy Duty', type: 'Semi-Trailer', capacity: '40,000 kg', odo: '12,450 km', cost: '$145,000', status: 'Available', statusColor: 'bg-emerald-50 text-emerald-600' },
   { reg: 'XYZ-9876', name: 'Mercedes Actros', model: '2022 Long Haul', type: 'Flatbed', capacity: '32,000 kg', odo: '84,100 km', cost: '$128,500', status: 'On Trip', statusColor: 'bg-blue-50 text-blue-600' },
   { reg: 'LMN-5544', name: 'Scania R500', model: '2021 V8 Special', type: 'Refrigerated', capacity: '28,000 kg', odo: '156,000 km', cost: '$115,000', status: 'In Shop', statusColor: 'bg-orange-50 text-orange-600' },
@@ -24,6 +26,24 @@ const vehicles = [
 ];
 
 const FleetRegistry = () => {
+  const [vehiclesList, setVehiclesList] = React.useState(initialVehicles);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [formData, setFormData] = React.useState({ reg: '', name: '', model: '', type: 'Semi-Trailer', capacity: '', cost: '' });
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    const newVehicle = {
+      ...formData,
+      odo: '0 km',
+      status: 'Available',
+      statusColor: 'bg-emerald-50 text-emerald-600'
+    };
+    setVehiclesList([newVehicle, ...vehiclesList]);
+    setIsModalOpen(false);
+    setFormData({ reg: '', name: '', model: '', type: 'Semi-Trailer', capacity: '', cost: '' });
+    toast.success('Vehicle added successfully');
+  };
+
   return (
     <DashboardLayout title="Vehicle Registry">
       
@@ -97,7 +117,7 @@ const FleetRegistry = () => {
               <Download className="w-4 h-4" />
               Export
             </button>
-            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
+            <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors">
               <Plus className="w-4 h-4" />
               Add Vehicle
             </button>
@@ -121,7 +141,7 @@ const FleetRegistry = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {vehicles.map((v) => (
+              {vehiclesList.map((v, i) => (
                 <tr key={v.reg} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                   <td className="p-4 pl-6 font-semibold text-slate-900">{v.reg}</td>
                   <td className="p-4 text-slate-600">{v.name}</td>
@@ -256,6 +276,55 @@ const FleetRegistry = () => {
         </div>
 
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Add New Vehicle</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleRegister} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Registration Plate</label>
+                  <input type="text" required value={formData.reg} onChange={e => setFormData({...formData, reg: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="ABC-1234" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Make & Name</label>
+                  <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="Volvo FH16" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Model / Year</label>
+                  <input type="text" required value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="2024 Heavy Duty" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Type</label>
+                    <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                      <option value="Semi-Trailer">Semi-Trailer</option>
+                      <option value="Flatbed">Flatbed</option>
+                      <option value="Box Truck">Box Truck</option>
+                      <option value="Refrigerated">Refrigerated</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Capacity</label>
+                    <input type="text" required value={formData.capacity} onChange={e => setFormData({...formData, capacity: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="40,000 kg" />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-8 flex gap-3">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800">Save Vehicle</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </DashboardLayout>
   );

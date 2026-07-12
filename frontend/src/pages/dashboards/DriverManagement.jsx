@@ -10,10 +10,12 @@ import {
   Download,
   Plus,
   MoreHorizontal,
-  Clock
+  Clock,
+  X
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
-const drivers = [
+const initialDrivers = [
   { name: 'Marcus Thompson', id: 'TX-8829102', phone: '(555) 123-4567', avatar: 'M', class: 'Class A', expiry: 'Expired', score: 98, status: 'Available', statusColor: 'text-emerald-600 bg-emerald-50 border border-emerald-100' },
   { name: 'Elena Rodriguez', id: 'CA-1120394', phone: '(555) 987-6543', avatar: 'E', class: 'Class B', expiry: 'Expired', score: 92, status: 'On Trip', statusColor: 'text-blue-600 bg-blue-50 border border-blue-100' },
   { name: 'James Wilson', id: 'NY-4458291', phone: '(555) 246-8101', avatar: 'J', class: 'Class A', expiry: 'Expired', score: 65, status: 'Off Duty', statusColor: 'text-slate-600 bg-slate-50 border border-slate-200' },
@@ -22,6 +24,26 @@ const drivers = [
 ];
 
 const DriverManagement = () => {
+  const [drivers, setDrivers] = React.useState(initialDrivers);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [formData, setFormData] = React.useState({ name: '', id: '', phone: '', class: 'Class A' });
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    const newDriver = {
+      ...formData,
+      avatar: formData.name.charAt(0).toUpperCase() || 'D',
+      expiry: 'Valid',
+      score: 100,
+      status: 'Available',
+      statusColor: 'text-emerald-600 bg-emerald-50 border border-emerald-100'
+    };
+    setDrivers([newDriver, ...drivers]);
+    setIsModalOpen(false);
+    setFormData({ name: '', id: '', phone: '', class: 'Class A' });
+    toast.success('Driver registered successfully');
+  };
+
   return (
     <DashboardLayout title="Driver Management">
       
@@ -91,7 +113,7 @@ const DriverManagement = () => {
             <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
               <Download className="w-4 h-4" /> Export CSV
             </button>
-            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800">
+            <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800">
               <Plus className="w-4 h-4" /> Register New Driver
             </button>
           </div>
@@ -235,6 +257,49 @@ const DriverManagement = () => {
         </div>
 
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Register New Driver</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleRegister} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
+                  <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="John Doe" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">License ID</label>
+                  <input type="text" required value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="TX-1234567" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Phone Number</label>
+                  <input type="text" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="(555) 000-0000" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">License Class</label>
+                  <select value={formData.class} onChange={e => setFormData({...formData, class: e.target.value})} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <option value="Class A">Class A</option>
+                    <option value="Class B">Class B</option>
+                    <option value="Class C">Class C</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-8 flex gap-3">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800">Register</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </DashboardLayout>
   );
 };
