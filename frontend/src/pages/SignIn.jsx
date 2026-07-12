@@ -56,8 +56,10 @@ const SignIn = () => {
         navigate('/trips');
       } else if (data.role === 'Safety Officer' || data.role === 'safety_officer') {
         navigate('/drivers');
+      } else if (data.role === 'Financial Analyst' || data.role === 'financial_analyst') {
+        navigate('/expenses');
       } else {
-        navigate('/dashboard');
+        navigate('/home');
       }
     } catch (err) {
       toast.error(err.message);
